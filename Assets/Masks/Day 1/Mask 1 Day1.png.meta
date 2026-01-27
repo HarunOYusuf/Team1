@@ -103,10 +103,10 @@ TextureImporter:
       name: Mask 1 Day1_0
       rect:
         serializedVersion: 2
-        x: 604
-        y: 177
-        width: 612
-        height: 844
+        x: 88
+        y: 25
+        width: 336
+        height: 462
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
