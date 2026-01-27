@@ -7,15 +7,22 @@ using System.Collections.Generic;
 public class MaskZone
 {
     public string zoneName;
-    public Rect zoneBounds;                    // The box area on the canvas (in pixels)
-    public Vector2 shapeCenter;                // Auto-calculated: where the shape is in this zone
-    public Texture2D extractedShape;           // Auto-extracted: the shape from the full mask
-    public int shapePixelCount;                // Auto-calculated: how many pixels in this shape
+    public Rect zoneBounds;
+    public Vector2 shapeCenter;
+    public Texture2D extractedShape;
+    public int shapePixelCount;
+    public Color shapeColor;
     
     [Header("Runtime Scores")]
     public float shapeScore;
     public float locationScore;
+    public float sizeScore;
     public float zoneScore;
+    
+    [Header("Debug Info")]
+    public float coveragePercent;
+    public float precisionPercent;
+    public float overflowPenalty;
 }
 
 public class SimplePainting : MonoBehaviour
@@ -26,20 +33,34 @@ public class SimplePainting : MonoBehaviour
     [SerializeField] private int brushSize = 10;
     
     [Header("Target & Comparison")]
-    [SerializeField] private Texture2D fullMaskTexture;    // The complete mask design
+    [SerializeField] private Texture2D fullMaskTexture;
     [SerializeField] private float passingScore = 50f;
     
+    [Header("Detectable Colors")]
+    [SerializeField] private Color detectRed = Color.red;
+    [SerializeField] private Color detectBlue = Color.blue;
+    [SerializeField] private Color detectYellow = Color.yellow;
+    [SerializeField] private float colorDetectionTolerance = 0.3f;
+    
     [Header("Tolerance Settings")]
-    [SerializeField] private int shapeToleranceRadius = 10;     // Forgiveness for shape matching
-    [SerializeField] private float locationFullScoreRadius = 30f; // Distance for 100% location score
+    [SerializeField] private int shapeToleranceRadius = 8;
+    [SerializeField] private float locationFullScoreRadius = 30f;
+    [SerializeField] private float sizeToleranceLower = 0.7f;
+    [SerializeField] private float sizeToleranceUpper = 1.3f;
+    
+    [Header("Shape Strictness")]
+    [SerializeField] [Range(0f, 1f)] private float minimumCoverageRequired = 0.4f;  // Must cover at least 40% of original
+    [SerializeField] [Range(0f, 1f)] private float minimumPrecisionRequired = 0.5f; // At least 50% of paint must be on target
+    [SerializeField] [Range(0f, 2f)] private float overflowPenaltyMultiplier = 1.5f; // Penalty for painting outside
     
     [Header("Scoring Weights")]
-    [SerializeField] [Range(0f, 1f)] private float shapeWeight = 0.7f;
-    [SerializeField] [Range(0f, 1f)] private float locationWeight = 0.3f;
+    [SerializeField] [Range(0f, 1f)] private float shapeWeight = 0.5f;
+    [SerializeField] [Range(0f, 1f)] private float locationWeight = 0.25f;
+    [SerializeField] [Range(0f, 1f)] private float sizeWeight = 0.25f;
     
     [Header("Auto Zone Detection")]
-    [SerializeField] private int zonePadding = 20;              // Extra padding around detected shapes
-    [SerializeField] private int minShapePixels = 50;           // Minimum pixels to count as a shape
+    [SerializeField] private int zonePadding = 20;
+    [SerializeField] private int minShapePixels = 50;
     
     [Header("UI References")]
     [SerializeField] private GameObject targetDisplay;
@@ -57,12 +78,12 @@ public class SimplePainting : MonoBehaviour
     [SerializeField] private Color zoneOverlayColor = new Color(0f, 1f, 0f, 0.2f);
     [SerializeField] private Color shapeOverlayColor = new Color(1f, 1f, 0f, 0.5f);
     
-    // Auto-detected zones
     [Header("Detected Zones (Auto-populated)")]
     [SerializeField] private List<MaskZone> zones = new List<MaskZone>();
     
     private Texture2D paintTexture;
-    private Texture2D expandedMaskTexture;     // For precision checking
+    private Texture2D expandedMaskTexture;
+    private Texture2D originalBaseTexture;  // Store original for reset
     private Camera mainCamera;
     private bool canPaint = false;
     private float timer;
@@ -73,13 +94,17 @@ public class SimplePainting : MonoBehaviour
     {
         mainCamera = Camera.main;
         
+        // Store original base texture for reset
+        Texture2D baseTexture = spriteRenderer.sprite.texture;
+        originalBaseTexture = new Texture2D(baseTexture.width, baseTexture.height);
+        originalBaseTexture.SetPixels(baseTexture.GetPixels());
+        originalBaseTexture.Apply();
+        
         // Create paintable texture
-        Texture2D whiteTexture = spriteRenderer.sprite.texture;
-        paintTexture = new Texture2D(whiteTexture.width, whiteTexture.height);
-        paintTexture.SetPixels(whiteTexture.GetPixels());
+        paintTexture = new Texture2D(baseTexture.width, baseTexture.height);
+        paintTexture.SetPixels(baseTexture.GetPixels());
         paintTexture.Apply();
         
-        // Set up sprite
         Sprite newSprite = Sprite.Create(
             paintTexture,
             new Rect(0, 0, paintTexture.width, paintTexture.height),
@@ -88,18 +113,51 @@ public class SimplePainting : MonoBehaviour
         );
         spriteRenderer.sprite = newSprite;
         
-        // Auto-detect zones from the full mask
         AutoDetectZones();
-        
-        // Generate expanded mask for precision
         GenerateExpandedMask();
         
-        // Set up UI
         submitButton.onClick.AddListener(OnSubmit);
         submitButton.gameObject.SetActive(false);
         resultText.gameObject.SetActive(false);
         
         StartMemoryPhase();
+    }
+    
+    bool IsDetectableColor(Color c, out Color matchedColor)
+    {
+        matchedColor = Color.clear;
+        
+        if (c.a < 0.1f)
+            return false;
+        
+        if (ColorsMatchWithTolerance(c, detectRed, colorDetectionTolerance))
+        {
+            matchedColor = detectRed;
+            return true;
+        }
+        
+        if (ColorsMatchWithTolerance(c, detectBlue, colorDetectionTolerance))
+        {
+            matchedColor = detectBlue;
+            return true;
+        }
+        
+        if (ColorsMatchWithTolerance(c, detectYellow, colorDetectionTolerance))
+        {
+            matchedColor = detectYellow;
+            return true;
+        }
+        
+        return false;
+    }
+    
+    bool ColorsMatchWithTolerance(Color c1, Color c2, float tolerance)
+    {
+        float rDiff = Mathf.Abs(c1.r - c2.r);
+        float gDiff = Mathf.Abs(c1.g - c2.g);
+        float bDiff = Mathf.Abs(c1.b - c2.b);
+        
+        return (rDiff < tolerance && gDiff < tolerance && bDiff < tolerance);
     }
     
     void AutoDetectZones()
@@ -115,10 +173,7 @@ public class SimplePainting : MonoBehaviour
         int width = fullMaskTexture.width;
         int height = fullMaskTexture.height;
         
-        // Track which pixels we've already assigned to a zone
         bool[,] visited = new bool[width, height];
-        
-        // Find all connected shapes using flood fill
         int zoneCount = 0;
         
         for (int x = 0; x < width; x++)
@@ -128,20 +183,20 @@ public class SimplePainting : MonoBehaviour
                 if (visited[x, y]) continue;
                 
                 Color pixel = fullMaskTexture.GetPixel(x, y);
+                Color matchedColor;
                 
-                if (IsShapePixel(pixel))
+                if (IsDetectableColor(pixel, out matchedColor))
                 {
-                    // Found a new shape, flood fill to find all connected pixels
-                    List<Vector2Int> shapePixels = FloodFill(x, y, visited);
+                    List<Vector2Int> shapePixels = FloodFillByColor(x, y, visited, matchedColor);
                     
                     if (shapePixels.Count >= minShapePixels)
                     {
-                        // Create a zone for this shape
-                        MaskZone zone = CreateZoneFromPixels(shapePixels, zoneCount);
+                        MaskZone zone = CreateZoneFromPixels(shapePixels, zoneCount, matchedColor);
                         zones.Add(zone);
                         zoneCount++;
                         
-                        Debug.Log($"Detected zone '{zone.zoneName}' with {shapePixels.Count} pixels at {zone.zoneBounds}");
+                        string colorName = GetColorName(matchedColor);
+                        Debug.Log($"Detected zone '{zone.zoneName}' ({colorName}) with {shapePixels.Count} pixels at {zone.zoneBounds}");
                     }
                 }
                 else
@@ -151,10 +206,21 @@ public class SimplePainting : MonoBehaviour
             }
         }
         
-        Debug.Log($"Auto-detected {zones.Count} zones from mask");
+        Debug.Log($"Auto-detected {zones.Count} colored zones from mask");
     }
     
-    List<Vector2Int> FloodFill(int startX, int startY, bool[,] visited)
+    string GetColorName(Color c)
+    {
+        if (ColorsMatchWithTolerance(c, detectRed, colorDetectionTolerance))
+            return "Red";
+        if (ColorsMatchWithTolerance(c, detectBlue, colorDetectionTolerance))
+            return "Blue";
+        if (ColorsMatchWithTolerance(c, detectYellow, colorDetectionTolerance))
+            return "Yellow";
+        return "Unknown";
+    }
+    
+    List<Vector2Int> FloodFillByColor(int startX, int startY, bool[,] visited, Color targetColor)
     {
         List<Vector2Int> pixels = new List<Vector2Int>();
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
@@ -175,7 +241,7 @@ public class SimplePainting : MonoBehaviour
             
             Color pixel = fullMaskTexture.GetPixel(x, y);
             
-            if (!IsShapePixel(pixel))
+            if (!ColorsMatchWithTolerance(pixel, targetColor, colorDetectionTolerance))
             {
                 visited[x, y] = true;
                 continue;
@@ -184,7 +250,6 @@ public class SimplePainting : MonoBehaviour
             visited[x, y] = true;
             pixels.Add(current);
             
-            // Check 8 neighbors (including diagonals for better connectivity)
             queue.Enqueue(new Vector2Int(x + 1, y));
             queue.Enqueue(new Vector2Int(x - 1, y));
             queue.Enqueue(new Vector2Int(x, y + 1));
@@ -198,9 +263,8 @@ public class SimplePainting : MonoBehaviour
         return pixels;
     }
     
-    MaskZone CreateZoneFromPixels(List<Vector2Int> pixels, int zoneIndex)
+    MaskZone CreateZoneFromPixels(List<Vector2Int> pixels, int zoneIndex, Color shapeColor)
     {
-        // Find bounding box
         int minX = int.MaxValue, minY = int.MaxValue;
         int maxX = int.MinValue, maxY = int.MinValue;
         float sumX = 0, sumY = 0;
@@ -215,10 +279,8 @@ public class SimplePainting : MonoBehaviour
             sumY += p.y;
         }
         
-        // Calculate center of the shape
         Vector2 shapeCenter = new Vector2(sumX / pixels.Count, sumY / pixels.Count);
         
-        // Create zone bounds with padding
         int paddedMinX = Mathf.Max(0, minX - zonePadding);
         int paddedMinY = Mathf.Max(0, minY - zonePadding);
         int paddedMaxX = Mathf.Min(fullMaskTexture.width - 1, maxX + zonePadding);
@@ -231,18 +293,15 @@ public class SimplePainting : MonoBehaviour
             paddedMaxY - paddedMinY
         );
         
-        // Extract the shape texture for this zone
         int shapeWidth = maxX - minX + 1;
         int shapeHeight = maxY - minY + 1;
         Texture2D extractedShape = new Texture2D(shapeWidth, shapeHeight);
         
-        // Fill with white first
         Color[] clearColors = new Color[shapeWidth * shapeHeight];
         for (int i = 0; i < clearColors.Length; i++)
             clearColors[i] = Color.white;
         extractedShape.SetPixels(clearColors);
         
-        // Copy shape pixels
         foreach (Vector2Int p in pixels)
         {
             int localX = p.x - minX;
@@ -251,13 +310,16 @@ public class SimplePainting : MonoBehaviour
         }
         extractedShape.Apply();
         
+        string colorName = GetColorName(shapeColor);
+        
         MaskZone zone = new MaskZone
         {
-            zoneName = $"Shape {zoneIndex + 1}",
+            zoneName = $"{colorName} Shape {zoneIndex + 1}",
             zoneBounds = zoneBounds,
             shapeCenter = shapeCenter,
             extractedShape = extractedShape,
-            shapePixelCount = pixels.Count
+            shapePixelCount = pixels.Count,
+            shapeColor = shapeColor
         };
         
         return zone;
@@ -267,14 +329,15 @@ public class SimplePainting : MonoBehaviour
     {
         expandedMaskTexture = new Texture2D(fullMaskTexture.width, fullMaskTexture.height);
         
-        bool[,] isShapePixel = new bool[fullMaskTexture.width, fullMaskTexture.height];
+        bool[,] isDetectablePixel = new bool[fullMaskTexture.width, fullMaskTexture.height];
         
         for (int x = 0; x < fullMaskTexture.width; x++)
         {
             for (int y = 0; y < fullMaskTexture.height; y++)
             {
                 Color c = fullMaskTexture.GetPixel(x, y);
-                isShapePixel[x, y] = IsShapePixel(c);
+                Color matchedColor;
+                isDetectablePixel[x, y] = IsDetectableColor(c, out matchedColor);
             }
         }
         
@@ -296,7 +359,7 @@ public class SimplePainting : MonoBehaviour
                         {
                             float distance = Mathf.Sqrt(dx * dx + dy * dy);
                             
-                            if (distance <= shapeToleranceRadius && isShapePixel[checkX, checkY])
+                            if (distance <= shapeToleranceRadius && isDetectablePixel[checkX, checkY])
                             {
                                 withinTolerance = true;
                             }
@@ -321,8 +384,8 @@ public class SimplePainting : MonoBehaviour
     
     bool IsShapePixel(Color c)
     {
-        // Not white and not transparent
-        return c.a >= 0.1f && !ColorsMatch(c, backgroundColor);
+        Color matchedColor;
+        return IsDetectableColor(c, out matchedColor);
     }
     
     void Update()
@@ -343,7 +406,21 @@ public class SimplePainting : MonoBehaviour
             Paint();
         }
         
-        if (Input.GetKeyDown(KeyCode.Alpha1)) paintColor = Color.red;
+        if (Input.GetKeyDown(KeyCode.Alpha1)) 
+        {
+            paintColor = detectRed;
+            Debug.Log("Switched to Red");
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2)) 
+        {
+            paintColor = detectBlue;
+            Debug.Log("Switched to Blue");
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha3)) 
+        {
+            paintColor = detectYellow;
+            Debug.Log("Switched to Yellow");
+        }
         
         if (Input.GetKeyDown(KeyCode.D))
         {
@@ -391,7 +468,7 @@ public class SimplePainting : MonoBehaviour
         memoryPhaseActive = false;
         
         canPaint = true;
-        instructionText.text = "Paint the design from memory! (D = Debug Overlay)";
+        instructionText.text = "Paint! (1=Red, 2=Blue, 3=Yellow, D=Debug)";
         
         submitButton.gameObject.SetActive(true);
         
@@ -400,35 +477,35 @@ public class SimplePainting : MonoBehaviour
             ApplyDebugOverlay();
         }
         
-        Debug.Log("Memory phase ended! Now paint from memory.");
+        Debug.Log("Memory phase ended!");
     }
     
     void ApplyDebugOverlay()
     {
-        // Show zone boundaries and shape areas
         for (int x = 0; x < paintTexture.width; x++)
         {
             for (int y = 0; y < paintTexture.height; y++)
             {
                 Color currentColor = paintTexture.GetPixel(x, y);
                 
-                if (!ColorsMatch(currentColor, backgroundColor))
-                    continue; // Don't overwrite player's paint
+                if (IsShapePixel(currentColor) || IsBlackOutline(currentColor))
+                    continue;
                 
-                // Check if in expanded shape area (yellow)
                 Color expandedColor = expandedMaskTexture.GetPixel(x, y);
-                if (!ColorsMatch(expandedColor, backgroundColor))
+                if (!ColorsMatchWithTolerance(expandedColor, backgroundColor, 0.1f))
                 {
                     paintTexture.SetPixel(x, y, shapeOverlayColor);
                     continue;
                 }
                 
-                // Check if in any zone bounds (green)
                 foreach (MaskZone zone in zones)
                 {
                     if (zone.zoneBounds.Contains(new Vector2(x, y)))
                     {
-                        paintTexture.SetPixel(x, y, zoneOverlayColor);
+                        if (ColorsMatchWithTolerance(currentColor, backgroundColor, 0.1f))
+                        {
+                            paintTexture.SetPixel(x, y, zoneOverlayColor);
+                        }
                         break;
                     }
                 }
@@ -436,7 +513,12 @@ public class SimplePainting : MonoBehaviour
         }
         
         paintTexture.Apply();
-        Debug.Log("Debug overlay ON - Green = zone bounds, Yellow = shape tolerance area");
+        Debug.Log("Debug overlay ON");
+    }
+    
+    bool IsBlackOutline(Color c)
+    {
+        return c.a >= 0.1f && c.r < 0.2f && c.g < 0.2f && c.b < 0.2f;
     }
     
     void RemoveDebugOverlay()
@@ -447,7 +529,8 @@ public class SimplePainting : MonoBehaviour
             {
                 Color currentColor = paintTexture.GetPixel(x, y);
                 
-                if (ColorsMatch(currentColor, zoneOverlayColor) || ColorsMatch(currentColor, shapeOverlayColor))
+                if (ColorsMatchWithTolerance(currentColor, zoneOverlayColor, 0.1f) || 
+                    ColorsMatchWithTolerance(currentColor, shapeOverlayColor, 0.1f))
                 {
                     paintTexture.SetPixel(x, y, backgroundColor);
                 }
@@ -508,7 +591,6 @@ public class SimplePainting : MonoBehaviour
             RemoveDebugOverlay();
         }
         
-        // Calculate scores for each zone
         float totalScore = 0f;
         string detailedResults = "";
         
@@ -519,7 +601,7 @@ public class SimplePainting : MonoBehaviour
             
             if (showDetailedScores)
             {
-                detailedResults += $"\n{zone.zoneName}: Shape {zone.shapeScore:F0}% | Loc {zone.locationScore:F0}% = {zone.zoneScore:F0}%";
+                detailedResults += $"\n{zone.zoneName}: Shape {zone.shapeScore:F0}% | Loc {zone.locationScore:F0}% | Size {zone.sizeScore:F0}% = {zone.zoneScore:F0}%";
             }
         }
         
@@ -546,7 +628,7 @@ public class SimplePainting : MonoBehaviour
     
     void CalculateZoneScore(MaskZone zone)
     {
-        // Find player's drawing within this zone
+        // Find player's drawing within this zone that matches the expected color
         List<Vector2Int> playerPixelsInZone = new List<Vector2Int>();
         float sumX = 0, sumY = 0;
         
@@ -564,7 +646,7 @@ public class SimplePainting : MonoBehaviour
                 
                 Color playerColor = paintTexture.GetPixel(x, y);
                 
-                if (IsShapePixel(playerColor))
+                if (ColorsMatchWithTolerance(playerColor, zone.shapeColor, colorDetectionTolerance))
                 {
                     playerPixelsInZone.Add(new Vector2Int(x, y));
                     sumX += x;
@@ -573,24 +655,27 @@ public class SimplePainting : MonoBehaviour
             }
         }
         
-        // If player didn't draw anything in this zone
+        // If player didn't draw anything
         if (playerPixelsInZone.Count == 0)
         {
             zone.shapeScore = 0f;
             zone.locationScore = 0f;
+            zone.sizeScore = 0f;
             zone.zoneScore = 0f;
+            zone.coveragePercent = 0f;
+            zone.precisionPercent = 0f;
+            zone.overflowPenalty = 0f;
             return;
         }
         
-        // Calculate player's drawing center
         Vector2 playerCenter = new Vector2(sumX / playerPixelsInZone.Count, sumY / playerPixelsInZone.Count);
         
-        // --- SHAPE SCORE ---
-        // Compare player's drawing to the expected shape using expanded tolerance
+        // --- STRICT SHAPE SCORE ---
         int coveredPixels = 0;
         int playerInExpandedZone = 0;
+        int playerOutsideExpandedZone = 0;
         
-        // Count original shape pixels in this zone
+        // Count original shape pixels and how many player covered
         int originalShapePixels = 0;
         for (int x = zoneMinX; x <= zoneMaxX; x++)
         {
@@ -600,13 +685,12 @@ public class SimplePainting : MonoBehaviour
                     continue;
                 
                 Color originalColor = fullMaskTexture.GetPixel(x, y);
-                if (IsShapePixel(originalColor))
+                if (ColorsMatchWithTolerance(originalColor, zone.shapeColor, colorDetectionTolerance))
                 {
                     originalShapePixels++;
                     
-                    // Check if player painted here
                     Color playerColor = paintTexture.GetPixel(x, y);
-                    if (IsShapePixel(playerColor))
+                    if (ColorsMatchWithTolerance(playerColor, zone.shapeColor, colorDetectionTolerance))
                     {
                         coveredPixels++;
                     }
@@ -614,24 +698,64 @@ public class SimplePainting : MonoBehaviour
             }
         }
         
-        // Check precision (player paint in expanded zone)
+        // Check each player pixel - is it in the expanded zone or not?
         foreach (Vector2Int p in playerPixelsInZone)
         {
             Color expandedColor = expandedMaskTexture.GetPixel(p.x, p.y);
-            if (!ColorsMatch(expandedColor, backgroundColor))
+            if (!ColorsMatchWithTolerance(expandedColor, backgroundColor, 0.1f))
             {
                 playerInExpandedZone++;
             }
+            else
+            {
+                playerOutsideExpandedZone++;
+            }
         }
         
+        // Calculate coverage and precision
         float coverage = originalShapePixels > 0 ? (float)coveredPixels / originalShapePixels : 0f;
         float precision = playerPixelsInZone.Count > 0 ? (float)playerInExpandedZone / playerPixelsInZone.Count : 0f;
         
-        // Shape score combines coverage and precision
-        zone.shapeScore = (coverage * 0.6f + precision * 0.4f) * 100f;
+        // Calculate overflow penalty - how much did they paint outside?
+        float overflowRatio = playerPixelsInZone.Count > 0 ? (float)playerOutsideExpandedZone / playerPixelsInZone.Count : 0f;
+        float overflowPenalty = overflowRatio * overflowPenaltyMultiplier;
+        
+        // Store debug info
+        zone.coveragePercent = coverage * 100f;
+        zone.precisionPercent = precision * 100f;
+        zone.overflowPenalty = overflowPenalty * 100f;
+        
+        // STRICT SHAPE SCORING:
+        // 1. Must meet minimum coverage
+        // 2. Must meet minimum precision
+        // 3. Apply overflow penalty
+        
+        float baseShapeScore = 0f;
+        
+        if (coverage >= minimumCoverageRequired && precision >= minimumPrecisionRequired)
+        {
+            // Good attempt - calculate actual score
+            // Coverage counts for 50%, precision counts for 50%
+            baseShapeScore = (coverage * 0.5f + precision * 0.5f) * 100f;
+            
+            // Apply overflow penalty
+            baseShapeScore = baseShapeScore * (1f - Mathf.Min(overflowPenalty, 0.8f));
+        }
+        else if (coverage >= minimumCoverageRequired * 0.5f || precision >= minimumPrecisionRequired * 0.5f)
+        {
+            // Partial attempt - give some credit but heavily reduced
+            baseShapeScore = (coverage * 0.5f + precision * 0.5f) * 50f;
+            baseShapeScore = baseShapeScore * (1f - Mathf.Min(overflowPenalty, 0.8f));
+        }
+        else
+        {
+            // Poor attempt - very low score
+            baseShapeScore = (coverage * 0.5f + precision * 0.5f) * 20f;
+        }
+        
+        zone.shapeScore = Mathf.Clamp(baseShapeScore, 0f, 100f);
         
         // --- LOCATION SCORE ---
-        // Compare center of player's drawing to center of expected shape
         float distance = Vector2.Distance(playerCenter, zone.shapeCenter);
         
         if (distance <= locationFullScoreRadius)
@@ -640,49 +764,68 @@ public class SimplePainting : MonoBehaviour
         }
         else
         {
-            // Calculate max possible distance (diagonal of zone)
             float maxDistance = Mathf.Sqrt(zone.zoneBounds.width * zone.zoneBounds.width + 
                                            zone.zoneBounds.height * zone.zoneBounds.height);
             
-            // Score decreases linearly after the full score radius
             float adjustedDistance = distance - locationFullScoreRadius;
             float adjustedMax = maxDistance - locationFullScoreRadius;
             
             zone.locationScore = Mathf.Max(0f, (1f - (adjustedDistance / adjustedMax)) * 100f);
         }
         
-        // --- COMBINED ZONE SCORE ---
-        zone.zoneScore = (zone.shapeScore * shapeWeight) + (zone.locationScore * locationWeight);
+        // --- SIZE SCORE ---
+        int playerPixelCount = playerPixelsInZone.Count;
+        int expectedPixelCount = zone.shapePixelCount;
         
-        Debug.Log($"{zone.zoneName}: Coverage={coverage*100:F1}%, Precision={precision*100:F1}%, " +
-                  $"Shape={zone.shapeScore:F1}%, Location={zone.locationScore:F1}%, Zone={zone.zoneScore:F1}%");
+        float sizeRatio = (float)playerPixelCount / expectedPixelCount;
+        
+        if (sizeRatio >= sizeToleranceLower && sizeRatio <= sizeToleranceUpper)
+        {
+            zone.sizeScore = 100f;
+        }
+        else if (sizeRatio < sizeToleranceLower)
+        {
+            zone.sizeScore = (sizeRatio / sizeToleranceLower) * 100f;
+        }
+        else
+        {
+            float excessRatio = (sizeRatio - sizeToleranceUpper) / sizeToleranceUpper;
+            zone.sizeScore = Mathf.Max(0f, (1f - excessRatio) * 100f);
+        }
+        
+        zone.sizeScore = Mathf.Clamp(zone.sizeScore, 0f, 100f);
+        
+        // --- COMBINED ZONE SCORE ---
+        zone.zoneScore = (zone.shapeScore * shapeWeight) + 
+                         (zone.locationScore * locationWeight) + 
+                         (zone.sizeScore * sizeWeight);
+        
+        Debug.Log($"{zone.zoneName}: Coverage={coverage*100:F1}% (min:{minimumCoverageRequired*100}%), " +
+                  $"Precision={precision*100:F1}% (min:{minimumPrecisionRequired*100}%), " +
+                  $"Overflow={overflowPenalty*100:F1}%, Shape={zone.shapeScore:F1}%, " +
+                  $"Location={zone.locationScore:F1}%, Size={zone.sizeScore:F1}%, Zone={zone.zoneScore:F1}%");
     }
     
     bool ColorsMatch(Color c1, Color c2)
     {
-        float rDiff = Mathf.Abs(c1.r - c2.r);
-        float gDiff = Mathf.Abs(c1.g - c2.g);
-        float bDiff = Mathf.Abs(c1.b - c2.b);
-        
-        return (rDiff < 0.1f && gDiff < 0.1f && bDiff < 0.1f);
+        return ColorsMatchWithTolerance(c1, c2, 0.1f);
     }
     
     void RestartDemo()
     {
-        Color[] resetColors = new Color[paintTexture.width * paintTexture.height];
-        for (int i = 0; i < resetColors.Length; i++)
-        {
-            resetColors[i] = backgroundColor;
-        }
-        paintTexture.SetPixels(resetColors);
+        // Reset to original base texture (keeps mask outline)
+        paintTexture.SetPixels(originalBaseTexture.GetPixels());
         paintTexture.Apply();
         
-        // Reset zone scores
         foreach (MaskZone zone in zones)
         {
             zone.shapeScore = 0f;
             zone.locationScore = 0f;
+            zone.sizeScore = 0f;
             zone.zoneScore = 0f;
+            zone.coveragePercent = 0f;
+            zone.precisionPercent = 0f;
+            zone.overflowPenalty = 0f;
         }
         
         resultText.gameObject.SetActive(false);
@@ -690,14 +833,12 @@ public class SimplePainting : MonoBehaviour
         StartMemoryPhase();
     }
     
-    // Editor helper to visualize zones in Scene view
     void OnDrawGizmosSelected()
     {
         if (zones == null || zones.Count == 0) return;
         
         foreach (MaskZone zone in zones)
         {
-            // Draw zone bounds
             Gizmos.color = Color.green;
             Vector3 center = new Vector3(
                 zone.zoneBounds.x + zone.zoneBounds.width / 2,
@@ -707,8 +848,7 @@ public class SimplePainting : MonoBehaviour
             Vector3 size = new Vector3(zone.zoneBounds.width, zone.zoneBounds.height, 0);
             Gizmos.DrawWireCube(center, size);
             
-            // Draw shape center
-            Gizmos.color = Color.yellow;
+            Gizmos.color = zone.shapeColor;
             Gizmos.DrawSphere(new Vector3(zone.shapeCenter.x, zone.shapeCenter.y, 0), 5f);
         }
     }
