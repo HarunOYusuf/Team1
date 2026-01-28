@@ -876,8 +876,8 @@ GameObject:
   - component: {fileID: 1659251665}
   - component: {fileID: 1659251664}
   - component: {fileID: 1659251663}
-  - component: {fileID: 1659251666}
   - component: {fileID: 1659251667}
+  - component: {fileID: 1659251666}
   m_Layer: 0
   m_Name: PaintableCanvas
   m_TagString: Untagged
@@ -923,7 +923,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 5.55, y: 7.96}
+    oldSize: {x: 5.12, y: 5.12}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -975,7 +975,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1357508017302701518, guid: 01f69d3c1d297314e83bbb3aa3ea4adf, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d73082bcaf706334ea09e6daf8025ced, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -1077,12 +1077,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spriteRenderer: {fileID: 1659251664}
   paintColor: {r: 1, g: 0, b: 0, a: 1}
-  brushSize: 8
+  brushSize: 5
+  maskDisplayImage: {fileID: 2800000, guid: 45399073b03951544af28c85137a12a7, type: 3}
   referencePatternPNG: {fileID: 2800000, guid: bec0f42b88ba1514795f8f5cec73af88, type: 3}
   patternColor: {r: 1, g: 0, b: 0, a: 1}
   colorTolerance: 0.3
   passingScore: 60
   samplePointCount: 128
+  shapeWeight: 0.5
+  quadrantWeight: 0.5
+  gridDivisions: 2
+  emptyQuadrantPenalty: 50
   targetDisplay: {fileID: 20776207}
   targetImage: {fileID: 1038047439}
   instructionText: {fileID: 1554806901}
@@ -1093,7 +1098,11 @@ MonoBehaviour:
   referencePointCount: 0
   playerPointCount: 0
   rawDistance: 0
-  similarityScore: 0
+  shapeScore: 0
+  quadrantScore: 0
+  finalScore: 0
+  referenceQuadrantCounts: 
+  playerQuadrantCounts: 
 --- !u!1 &2012833020
 GameObject:
   m_ObjectHideFlags: 0
