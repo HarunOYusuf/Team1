@@ -390,8 +390,9 @@ MonoBehaviour:
   switchSettingsMigration: 1
   HasSourceProject: 1
   HasPlatforms: 1
-  sourceProjectPath: ../../../Desktop/Personal games/The Maskquerade/The Maskquerade.fspro
-  sourceBankPath: ../../../Desktop/Personal games/The Maskquerade/Build
+  sourceProjectPath: ../../../Desktop/Personal games/The Maskquerade/Fmod for game
+    jam/The Maskquerade.fspro
+  sourceBankPath: ../../../Desktop/Personal games/The Maskquerade/Fmod for game jam/Build
   sourceBankPathUnformatted: 
   BankRefreshCooldown: 5
   ShowBankRefreshWindow: 1
@@ -413,8 +414,10 @@ MonoBehaviour:
   VirtualChannelSettings: []
   RealChannelSettings: []
   Plugins: []
-  MasterBanks: []
-  Banks: []
+  MasterBanks:
+  - Master
+  Banks:
+  - Main Menu
   BanksToLoad: []
   LiveUpdatePort: 9264
   EnableMemoryTracking: 0
