@@ -41,6 +41,8 @@ public class MaskPaintingPDollar : MonoBehaviour
     
     [Header("Debug")]
     [SerializeField] private bool showDebugInfo = true;
+    [SerializeField] private bool showQuadrantOverlay = false;  // Press D to toggle
+    [SerializeField] private Color quadrantLineColor = Color.yellow;
     [SerializeField] private int referencePointCount;
     [SerializeField] private int playerPointCount;
     [SerializeField] private float rawDistance;
@@ -51,6 +53,9 @@ public class MaskPaintingPDollar : MonoBehaviour
     // Quadrant pixel counts for debugging
     [SerializeField] private int[] referenceQuadrantCounts;
     [SerializeField] private int[] playerQuadrantCounts;
+    
+    // Store original alpha values for transparent area protection
+    private float[,] originalAlphaMap;
     
     // Private variables
     private Texture2D paintTexture;
@@ -111,6 +116,17 @@ public class MaskPaintingPDollar : MonoBehaviour
         paintTexture.SetPixels(baseTexture.GetPixels());
         paintTexture.Apply();
         Debug.Log("[6] Paint texture created: OK");
+        
+        // Store original alpha values for transparent area protection
+        originalAlphaMap = new float[baseTexture.width, baseTexture.height];
+        for (int x = 0; x < baseTexture.width; x++)
+        {
+            for (int y = 0; y < baseTexture.height; y++)
+            {
+                originalAlphaMap[x, y] = baseTexture.GetPixel(x, y).a;
+            }
+        }
+        Debug.Log("[6b] Alpha map stored for transparent area protection");
         
         Sprite newSprite = Sprite.Create(
             paintTexture,
@@ -306,6 +322,13 @@ public class MaskPaintingPDollar : MonoBehaviour
             }
         }
         
+        // Toggle quadrant overlay with D key
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            showQuadrantOverlay = !showQuadrantOverlay;
+            Debug.Log($"Quadrant overlay: {(showQuadrantOverlay ? "ON" : "OFF")}");
+        }
+        
         // Restart
         if (Input.GetKeyDown(KeyCode.Space) && !canPaint && !memoryPhaseActive)
         {
@@ -410,6 +433,13 @@ public class MaskPaintingPDollar : MonoBehaviour
                     
                     if (distance <= brushSize)
                     {
+                        // Check if this pixel was originally transparent (eye holes, etc.)
+                        if (originalAlphaMap != null && originalAlphaMap[x, y] < 0.1f)
+                        {
+                            // Skip painting on transparent areas
+                            continue;
+                        }
+                        
                         paintTexture.SetPixel(x, y, paintColor);
                     }
                 }
@@ -757,6 +787,88 @@ public class MaskPaintingPDollar : MonoBehaviour
         resultText.gameObject.SetActive(false);
         
         StartMemoryPhase();
+    }
+    
+    #endregion
+    
+    #region Debug Overlay
+    
+    void OnGUI()
+    {
+        if (!showQuadrantOverlay) return;
+        if (spriteRenderer == null) return;
+        
+        // Get sprite bounds in screen space
+        Bounds bounds = spriteRenderer.bounds;
+        
+        Vector3 bottomLeft = mainCamera.WorldToScreenPoint(bounds.min);
+        Vector3 topRight = mainCamera.WorldToScreenPoint(bounds.max);
+        
+        // Flip Y because GUI coordinates are inverted
+        bottomLeft.y = Screen.height - bottomLeft.y;
+        topRight.y = Screen.height - topRight.y;
+        
+        float left = bottomLeft.x;
+        float right = topRight.x;
+        float top = topRight.y;
+        float bottom = bottomLeft.y;
+        
+        float width = right - left;
+        float height = bottom - top;
+        
+        // Create a texture for drawing lines
+        Texture2D lineTex = new Texture2D(1, 1);
+        lineTex.SetPixel(0, 0, quadrantLineColor);
+        lineTex.Apply();
+        
+        // Draw grid lines
+        for (int i = 1; i < gridDivisions; i++)
+        {
+            // Vertical lines
+            float xPos = left + (width / gridDivisions) * i;
+            GUI.DrawTexture(new Rect(xPos - 1, top, 3, height), lineTex);
+            
+            // Horizontal lines
+            float yPos = top + (height / gridDivisions) * i;
+            GUI.DrawTexture(new Rect(left, yPos - 1, width, 3), lineTex);
+        }
+        
+        // Draw border
+        GUI.DrawTexture(new Rect(left, top, width, 3), lineTex);  // Top
+        GUI.DrawTexture(new Rect(left, bottom - 3, width, 3), lineTex);  // Bottom
+        GUI.DrawTexture(new Rect(left, top, 3, height), lineTex);  // Left
+        GUI.DrawTexture(new Rect(right - 3, top, 3, height), lineTex);  // Right
+        
+        // Draw quadrant labels with pixel counts
+        GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
+        labelStyle.fontSize = 14;
+        labelStyle.fontStyle = FontStyle.Bold;
+        labelStyle.normal.textColor = quadrantLineColor;
+        
+        float cellWidth = width / gridDivisions;
+        float cellHeight = height / gridDivisions;
+        
+        for (int row = 0; row < gridDivisions; row++)
+        {
+            for (int col = 0; col < gridDivisions; col++)
+            {
+                int index = row * gridDivisions + col;
+                float cellX = left + col * cellWidth + 5;
+                float cellY = top + row * cellHeight + 5;
+                
+                string refCount = referenceQuadrantCounts != null && index < referenceQuadrantCounts.Length 
+                    ? referenceQuadrantCounts[index].ToString() 
+                    : "?";
+                string playerCount = playerQuadrantCounts != null && index < playerQuadrantCounts.Length 
+                    ? playerQuadrantCounts[index].ToString() 
+                    : "?";
+                
+                GUI.Label(new Rect(cellX, cellY, cellWidth - 10, 40), $"Q{index}\nRef:{refCount}\nYou:{playerCount}", labelStyle);
+            }
+        }
+        
+        // Cleanup
+        Destroy(lineTex);
     }
     
     #endregion
