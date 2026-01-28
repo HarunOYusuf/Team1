@@ -471,7 +471,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 300, y: 300}
+  m_SizeDelta: {x: 512, y: 512}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1038047438
 CanvasRenderer:
@@ -501,7 +501,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 27e1a116e9e0e304ab23d027de7b49c9, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -797,7 +797,7 @@ GameObject:
   - component: {fileID: 1659251665}
   - component: {fileID: 1659251664}
   - component: {fileID: 1659251663}
-  - component: {fileID: 1659251662}
+  - component: {fileID: 1659251666}
   m_Layer: 0
   m_Name: PaintableCanvas
   m_TagString: Untagged
@@ -805,40 +805,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1659251662
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1659251661}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11653df0051f68c46b31fcea6e6641c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spriteRenderer: {fileID: 1659251664}
-  paintColor: {r: 1, g: 0, b: 0, a: 1}
-  brushSize: 10
-  fullMaskTexture: {fileID: 2800000, guid: 27e1a116e9e0e304ab23d027de7b49c9, type: 3}
-  passingScore: 50
-  shapeToleranceRadius: 25
-  locationFullScoreRadius: 30
-  shapeWeight: 0.8
-  locationWeight: 0.2
-  zonePadding: 50
-  minShapePixels: 25
-  targetDisplay: {fileID: 20776207}
-  targetImage: {fileID: 1038047439}
-  instructionText: {fileID: 1554806901}
-  submitButton: {fileID: 2050818346}
-  resultText: {fileID: 878356755}
-  viewDuration: 3
-  showZoneOverlay: 1
-  showDetailedScores: 1
-  zoneOverlayColor: {r: 0, g: 1, b: 0, a: 0.2}
-  shapeOverlayColor: {r: 1, g: 1, b: 0, a: 0.5}
-  zones: []
 --- !u!61 &1659251663
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -955,6 +921,68 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1659251666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659251661}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78c8e5824ad3ece4093b218b27615aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 1659251664}
+  paintColor: {r: 1, g: 0, b: 0, a: 1}
+  brushSize: 5
+  autoBrushSize: 1
+  detectedLineThickness: 0
+  autoBrushSizeResult: 0
+  targetShapeTexture: {fileID: 2800000, guid: b044b3748ab311f48b796bda78c350dd, type: 3}
+  detectColor: {r: 1, g: 0, b: 0, a: 1}
+  colorTolerance: 0.3
+  passingScore: 60
+  shapeWeight: 0.7
+  locationWeight: 0.15
+  sizeWeight: 0.15
+  useExpandedZoneScoring: 1
+  targetDisplay: {fileID: 20776207}
+  targetImage: {fileID: 1038047439}
+  instructionText: {fileID: 1554806901}
+  submitButton: {fileID: 2050818346}
+  resultText: {fileID: 878356755}
+  viewDuration: 5
+  targetHuMoments:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  targetPixelCount: 0
+  targetCenter: {x: 0, y: 0}
+  playerHuMoments:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  playerPixelCount: 0
+  playerCenter: {x: 0, y: 0}
+  shapeSimilarity: 0
+  locationScore: 0
+  sizeScore: 0
+  finalScore: 0
+  perfectShapeSimilarity: 0
+  perfectFinalScore: 0
+  showPerfectScoreOnStart: 1
+  showTargetOverlay: 0
+  targetOverlayColor: {r: 0, g: 1, b: 0, a: 0.5}
+  overlayThickness: 10
 --- !u!1 &1815695826
 GameObject:
   m_ObjectHideFlags: 0
