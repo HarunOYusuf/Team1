@@ -1,49 +1,55 @@
 fileFormatVersion: 2
-guid: 2c44c19babf74594eb2f82050a536dc5
+guid: 3b9cac83cfe00664ab9caa1b508a07e9
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2007685628176477524
-    second: Mask 2 day 1.3 D_0
+      213: 104153050916574707
+    second: Mask 2 day 2.3D_0
   - first:
-      213: 1432323407945793744
-    second: Mask 2 day 1.3 D_1
+      213: -3704972118804600279
+    second: Mask 2 day 2.3D_1
   - first:
-      213: 3763201261610857475
-    second: Mask 2 day 1.3 D_2
+      213: 2882090771165621348
+    second: Mask 2 day 2.3D_2
   - first:
-      213: 21258342646188071
-    second: Mask 2 day 1.3 D_3
+      213: -266140315230297177
+    second: Mask 2 day 2.3D_3
   - first:
-      213: 5656890376552389551
-    second: Mask 2 day 1.3 D_4
+      213: -2608412567089455961
+    second: Mask 2 day 2.3D_4
   - first:
-      213: -3545662894902676348
-    second: Mask 2 day 1.3 D_5
+      213: -5780583889267930943
+    second: Mask 2 day 2.3D_5
   - first:
-      213: 7097655318667208929
-    second: Mask 2 day 1.3 D_6
+      213: 7856491957453817664
+    second: Mask 2 day 2.3D_6
   - first:
-      213: 2117787429712739843
-    second: Mask 2 day 1.3 D_7
+      213: -1323553098918763508
+    second: Mask 2 day 2.3D_7
   - first:
-      213: 763407667674250889
-    second: Mask 2 day 1.3 D_8
+      213: -367668769559575858
+    second: Mask 2 day 2.3D_8
   - first:
-      213: -5156819776875022316
-    second: Mask 2 day 1.3 D_9
+      213: -5762309271609031733
+    second: Mask 2 day 2.3D_9
   - first:
-      213: -739145144524395820
-    second: Mask 2 day 1.3 D_10
+      213: -4302341239914464033
+    second: Mask 2 day 2.3D_10
   - first:
-      213: 1588468464344151538
-    second: Mask 2 day 1.3 D_11
+      213: 2439876427363325109
+    second: Mask 2 day 2.3D_11
   - first:
-      213: -4469472887973738147
-    second: Mask 2 day 1.3 D_12
+      213: -5533662711298858630
+    second: Mask 2 day 2.3D_12
   - first:
-      213: 5142684385460946486
-    second: Mask 2 day 1.3 D_13
+      213: 8204963752879879278
+    second: Mask 2 day 2.3D_13
+  - first:
+      213: 5288701663355640254
+    second: Mask 2 day 2.3D_14
+  - first:
+      213: 7908226378210295385
+    second: Mask 2 day 2.3D_15
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -139,7 +145,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_0
+      name: Mask 2 day 2.3D_0
       rect:
         serializedVersion: 2
         x: 104
@@ -154,14 +160,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 45dad10117bbcdb10800000000000000
-      internalID: 2007685628176477524
+      spriteID: 3f5d722e5a6027100800000000000000
+      internalID: 104153050916574707
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_1
+      name: Mask 2 day 2.3D_1
       rect:
         serializedVersion: 2
         x: 269
@@ -176,14 +182,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 0d0061efc82a0e310800000000000000
-      internalID: 1432323407945793744
+      spriteID: 92aecebdc7b459cc0800000000000000
+      internalID: -3704972118804600279
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_2
+      name: Mask 2 day 2.3D_2
       rect:
         serializedVersion: 2
         x: 120
@@ -198,14 +204,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 304fd90fb93993430800000000000000
-      internalID: 3763201261610857475
+      spriteID: 46c22c1594e3ff720800000000000000
+      internalID: 2882090771165621348
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_3
+      name: Mask 2 day 2.3D_3
       rect:
         serializedVersion: 2
         x: 230
@@ -220,14 +226,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 72880f999568b4000800000000000000
-      internalID: 21258342646188071
+      spriteID: 7a3a94a1bca7e4cf0800000000000000
+      internalID: -266140315230297177
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_4
+      name: Mask 2 day 2.3D_4
       rect:
         serializedVersion: 2
         x: 276
@@ -242,14 +248,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: fab1bb373df418e40800000000000000
-      internalID: 5656890376552389551
+      spriteID: 7acd7f6179e0dcbd0800000000000000
+      internalID: -2608412567089455961
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_5
+      name: Mask 2 day 2.3D_5
       rect:
         serializedVersion: 2
         x: 380
@@ -264,14 +270,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 484fa0002664bcec0800000000000000
-      internalID: -3545662894902676348
+      spriteID: 1c8c6dd549d37cfa0800000000000000
+      internalID: -5780583889267930943
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_6
+      name: Mask 2 day 2.3D_6
       rect:
         serializedVersion: 2
         x: 135
@@ -286,14 +292,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1e8225748efef7260800000000000000
-      internalID: 7097655318667208929
+      spriteID: 0478fb05fcdd70d60800000000000000
+      internalID: 7856491957453817664
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_7
+      name: Mask 2 day 2.3D_7
       rect:
         serializedVersion: 2
         x: 158
@@ -308,14 +314,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 30eb0d16274e36d10800000000000000
-      internalID: 2117787429712739843
+      spriteID: c046491187bc1ade0800000000000000
+      internalID: -1323553098918763508
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_8
+      name: Mask 2 day 2.3D_8
       rect:
         serializedVersion: 2
         x: 181
@@ -330,14 +336,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 98e7882aa3b289a00800000000000000
-      internalID: 763407667674250889
+      spriteID: ec2856bb337c5eaf0800000000000000
+      internalID: -367668769559575858
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_9
+      name: Mask 2 day 2.3D_9
       rect:
         serializedVersion: 2
         x: 211
@@ -352,14 +358,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 418b7a42cbb4f68b0800000000000000
-      internalID: -5156819776875022316
+      spriteID: bc3cdcb5f3a2800b0800000000000000
+      internalID: -5762309271609031733
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_10
+      name: Mask 2 day 2.3D_10
       rect:
         serializedVersion: 2
         x: 293
@@ -374,14 +380,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4da2b2f38670eb5f0800000000000000
-      internalID: -739145144524395820
+      spriteID: fdc7264ef630b44c0800000000000000
+      internalID: -4302341239914464033
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_11
+      name: Mask 2 day 2.3D_11
       rect:
         serializedVersion: 2
         x: 315
@@ -396,14 +402,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2f5b42af6af5b0610800000000000000
-      internalID: 1588468464344151538
+      spriteID: 5b417d40fae2cd120800000000000000
+      internalID: 2439876427363325109
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_12
+      name: Mask 2 day 2.3D_12
       rect:
         serializedVersion: 2
         x: 342
@@ -418,14 +424,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d590613b61e39f1c0800000000000000
-      internalID: -4469472887973738147
+      spriteID: a71e43a251b7433b0800000000000000
+      internalID: -5533662711298858630
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mask 2 day 1.3 D_13
+      name: Mask 2 day 2.3D_13
       rect:
         serializedVersion: 2
         x: 363
@@ -440,8 +446,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6360953933c7e5740800000000000000
-      internalID: 5142684385460946486
+      spriteID: e647c5dbf03edd170800000000000000
+      internalID: 8204963752879879278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mask 2 day 2.3D_14
+      rect:
+        serializedVersion: 2
+        x: 173
+        y: 136
+        width: 18
+        height: 112
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb9945f542e356940800000000000000
+      internalID: 5288701663355640254
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mask 2 day 2.3D_15
+      rect:
+        serializedVersion: 2
+        x: 328
+        y: 132
+        width: 18
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95e399ccdf9afbd60800000000000000
+      internalID: 7908226378210295385
       vertices: []
       indices: 
       edges: []
@@ -460,20 +510,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Mask 2 day 1.3 D_0: 2007685628176477524
-      Mask 2 day 1.3 D_1: 1432323407945793744
-      Mask 2 day 1.3 D_10: -739145144524395820
-      Mask 2 day 1.3 D_11: 1588468464344151538
-      Mask 2 day 1.3 D_12: -4469472887973738147
-      Mask 2 day 1.3 D_13: 5142684385460946486
-      Mask 2 day 1.3 D_2: 3763201261610857475
-      Mask 2 day 1.3 D_3: 21258342646188071
-      Mask 2 day 1.3 D_4: 5656890376552389551
-      Mask 2 day 1.3 D_5: -3545662894902676348
-      Mask 2 day 1.3 D_6: 7097655318667208929
-      Mask 2 day 1.3 D_7: 2117787429712739843
-      Mask 2 day 1.3 D_8: 763407667674250889
-      Mask 2 day 1.3 D_9: -5156819776875022316
+      Mask 2 day 2.3D_0: 104153050916574707
+      Mask 2 day 2.3D_1: -3704972118804600279
+      Mask 2 day 2.3D_10: -4302341239914464033
+      Mask 2 day 2.3D_11: 2439876427363325109
+      Mask 2 day 2.3D_12: -5533662711298858630
+      Mask 2 day 2.3D_13: 8204963752879879278
+      Mask 2 day 2.3D_14: 5288701663355640254
+      Mask 2 day 2.3D_15: 7908226378210295385
+      Mask 2 day 2.3D_2: 2882090771165621348
+      Mask 2 day 2.3D_3: -266140315230297177
+      Mask 2 day 2.3D_4: -2608412567089455961
+      Mask 2 day 2.3D_5: -5780583889267930943
+      Mask 2 day 2.3D_6: 7856491957453817664
+      Mask 2 day 2.3D_7: -1323553098918763508
+      Mask 2 day 2.3D_8: -367668769559575858
+      Mask 2 day 2.3D_9: -5762309271609031733
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

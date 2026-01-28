@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: ca5d62584d11cbc408a206c4b631fcbe
+guid: 1b53648203b99a54cab9594f3548a19a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1182566797301775954
-    second: Mask 3 Base_0
+      213: -3133966289048448287
+    second: Mask 2 day 3.2 D_0
+  - first:
+      213: 477568433514305722
+    second: Mask 2 day 3.2 D_1
+  - first:
+      213: 6168639326003242207
+    second: Mask 2 day 3.2 D_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +106,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Mask 3 Base_0
+      name: Mask 2 day 3.2 D_0
       rect:
         serializedVersion: 2
-        x: 88
-        y: 21
-        width: 412
-        height: 469
+        x: 145
+        y: 351
+        width: 224
+        height: 116
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +121,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 25ef7549c32596010800000000000000
-      internalID: 1182566797301775954
+      spriteID: 1e2d73bb34ae184d0800000000000000
+      internalID: -3133966289048448287
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mask 2 day 3.2 D_1
+      rect:
+        serializedVersion: 2
+        x: 131
+        y: 160
+        width: 72
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab85f83c5f9a0a600800000000000000
+      internalID: 477568433514305722
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mask 2 day 3.2 D_2
+      rect:
+        serializedVersion: 2
+        x: 291
+        y: 164
+        width: 73
+        height: 106
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd4adedb8c86b9550800000000000000
+      internalID: 6168639326003242207
       vertices: []
       indices: 
       edges: []
@@ -135,7 +185,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Mask 3 Base_0: 1182566797301775954
+      Mask 2 day 3.2 D_0: -3133966289048448287
+      Mask 2 day 3.2 D_1: 477568433514305722
+      Mask 2 day 3.2 D_2: 6168639326003242207
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

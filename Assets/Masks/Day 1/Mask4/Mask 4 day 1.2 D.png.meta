@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: ca5d62584d11cbc408a206c4b631fcbe
+guid: 63962ce852e087348aa838becaf5c171
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1182566797301775954
-    second: Mask 3 Base_0
+      213: -5552772205374527581
+    second: Mask 4 day 1.2 D_0
+  - first:
+      213: -3587098520437926378
+    second: Mask 4 day 1.2 D_1
+  - first:
+      213: 2283920173081437137
+    second: Mask 4 day 1.2 D_2
+  - first:
+      213: 658765134694677952
+    second: Mask 4 day 1.2 D_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +109,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Mask 3 Base_0
+      name: Mask 4 day 1.2 D_0
       rect:
         serializedVersion: 2
-        x: 88
-        y: 21
-        width: 412
-        height: 469
+        x: 155
+        y: 295
+        width: 46
+        height: 179
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +124,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 25ef7549c32596010800000000000000
-      internalID: 1182566797301775954
+      spriteID: 3a72dfb591790f2b0800000000000000
+      internalID: -5552772205374527581
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mask 4 day 1.2 D_1
+      rect:
+        serializedVersion: 2
+        x: 301
+        y: 292
+        width: 40
+        height: 178
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 616d7f2a6e0183ec0800000000000000
+      internalID: -3587098520437926378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mask 4 day 1.2 D_2
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 45
+        width: 50
+        height: 210
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d32ed3fb4d12bf10800000000000000
+      internalID: 2283920173081437137
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mask 4 day 1.2 D_3
+      rect:
+        serializedVersion: 2
+        x: 284
+        y: 47
+        width: 54
+        height: 204
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0cd73e35667642900800000000000000
+      internalID: 658765134694677952
       vertices: []
       indices: 
       edges: []
@@ -135,7 +210,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Mask 3 Base_0: 1182566797301775954
+      Mask 4 day 1.2 D_0: -5552772205374527581
+      Mask 4 day 1.2 D_1: -3587098520437926378
+      Mask 4 day 1.2 D_2: 2283920173081437137
+      Mask 4 day 1.2 D_3: 658765134694677952
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
