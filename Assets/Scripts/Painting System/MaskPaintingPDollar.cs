@@ -207,6 +207,158 @@ public class MaskPaintingPDollar : MonoBehaviour
         Debug.Log("[StartPaintingPhase] Ready to paint!");
     }
     
+    #region Public Methods for GameSceneManager
+    
+    /// <summary>
+    /// Enable or disable painting
+    /// </summary>
+    public void EnablePainting(bool enable)
+    {
+        canPaint = enable;
+        Debug.Log($"[MaskPaintingPDollar] Painting enabled: {enable}");
+    }
+    
+    /// <summary>
+    /// Reset paint to original (clear player's drawing)
+    /// </summary>
+    public void ResetPaint()
+    {
+        if (paintTexture != null && originalBaseTexture != null)
+        {
+            paintTexture.SetPixels(originalBaseTexture.GetPixels());
+            paintTexture.Apply();
+            
+            // Clear stroke tracking
+            playerStrokePoints.Clear();
+            currentStrokeID = 0;
+            
+            Debug.Log("[MaskPaintingPDollar] Paint reset");
+        }
+    }
+    
+    /// <summary>
+    /// Set the reference pattern to compare against (called by GameSceneManager)
+    /// </summary>
+    public void SetReferencePattern(Texture2D pattern, Color color)
+    {
+        referencePatternPNG = pattern;
+        patternColor = color;
+        
+        // Recreate reference gesture
+        CreateReferenceGesture();
+        
+        Debug.Log($"[MaskPaintingPDollar] Reference pattern set: {(pattern != null ? pattern.name : "null")}");
+    }
+    
+    /// <summary>
+    /// Set the base image for the painting canvas
+    /// </summary>
+    public void SetBaseImage(Texture2D baseImage)
+    {
+        if (baseImage != null && spriteRenderer != null)
+        {
+            Sprite baseSprite = Sprite.Create(
+                baseImage,
+                new Rect(0, 0, baseImage.width, baseImage.height),
+                new Vector2(0.5f, 0.5f),
+                100f
+            );
+            spriteRenderer.sprite = baseSprite;
+            
+            // Reinitialize textures
+            InitializePaintTexture();
+            
+            Debug.Log($"[MaskPaintingPDollar] Base image set: {baseImage.name}");
+        }
+    }
+    
+    /// <summary>
+    /// Initialize the paint texture from current sprite
+    /// </summary>
+    void InitializePaintTexture()
+    {
+        if (spriteRenderer == null || spriteRenderer.sprite == null) return;
+        
+        Texture2D baseTexture = spriteRenderer.sprite.texture;
+        
+        // Store original
+        originalBaseTexture = new Texture2D(baseTexture.width, baseTexture.height);
+        originalBaseTexture.SetPixels(baseTexture.GetPixels());
+        originalBaseTexture.Apply();
+        
+        // Create paintable texture
+        paintTexture = new Texture2D(baseTexture.width, baseTexture.height);
+        paintTexture.SetPixels(baseTexture.GetPixels());
+        paintTexture.Apply();
+        
+        // Store alpha map
+        originalAlphaMap = new float[baseTexture.width, baseTexture.height];
+        for (int x = 0; x < baseTexture.width; x++)
+        {
+            for (int y = 0; y < baseTexture.height; y++)
+            {
+                originalAlphaMap[x, y] = baseTexture.GetPixel(x, y).a;
+            }
+        }
+        
+        // Create new sprite
+        Sprite newSprite = Sprite.Create(
+            paintTexture,
+            new Rect(0, 0, paintTexture.width, paintTexture.height),
+            new Vector2(0.5f, 0.5f),
+            100f
+        );
+        spriteRenderer.sprite = newSprite;
+        
+        // Clear tracking
+        playerStrokePoints.Clear();
+        currentStrokeID = 0;
+    }
+    
+    /// <summary>
+    /// Calculate and return the score without showing UI
+    /// </summary>
+    public float CalculateScore()
+    {
+        // Convert player's stroke points to $P Points
+        List<PDollarGestureRecognizer.Point> playerPoints = ConvertPlayerDrawingToPoints();
+        
+        if (playerPoints.Count < 10)
+        {
+            Debug.Log("[MaskPaintingPDollar] Not enough drawing detected - score 0");
+            return 0f;
+        }
+        
+        playerPointCount = playerPoints.Count;
+        
+        // Sample if needed
+        if (playerPoints.Count > samplePointCount)
+        {
+            playerPoints = SamplePoints(playerPoints, samplePointCount);
+        }
+        
+        // Create player gesture
+        Gesture playerGesture = new Gesture(playerPoints.ToArray(), "PlayerDrawing");
+        
+        // === PART 1: $P Shape Score ===
+        float distance = CalculateGestureDistance(referenceGesture, playerGesture);
+        rawDistance = distance;
+        shapeScore = ConvertDistanceToScore(distance);
+        
+        // === PART 2: Quadrant Pixel Score ===
+        playerQuadrantCounts = CalculateQuadrantPixelCounts(paintTexture);
+        quadrantScore = CalculateQuadrantMatchScore();
+        
+        // === COMBINED SCORE ===
+        finalScore = (shapeScore * shapeWeight) + (quadrantScore * quadrantWeight);
+        
+        Debug.Log($"[MaskPaintingPDollar] Score calculated - Shape: {shapeScore:F1}%, Quadrant: {quadrantScore:F1}%, Final: {finalScore:F1}%");
+        
+        return finalScore;
+    }
+    
+    #endregion
+
     #region GameData Integration
     
     void LoadMaskFromGameData()
