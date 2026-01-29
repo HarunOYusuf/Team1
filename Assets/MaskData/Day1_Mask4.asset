@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15010ad0e8ea69f40925e221728ee970, type: 3}
+  m_Name: Day1_Mask4
+  m_EditorClassIdentifier: 
+  maskName: Day1_Mask4
+  maskID: 4
+  displayImage: {fileID: 2800000, guid: 86e8b00d7b62e76459888e1ae88c9f89, type: 3}
+  patternImage: {fileID: 2800000, guid: db5e07b1e5d6fe9489f62272924e1bd1, type: 3}
+  baseImage: {fileID: 2800000, guid: 5f89a08722002ea4eb7256f5b98ae046, type: 3}
+  availableOnDay: 1
+  difficulty: 1
+  basePrice: 50
+  patternColor: {r: 1, g: 0, b: 0, a: 1}
+  customerRequest: I need a mask like this...

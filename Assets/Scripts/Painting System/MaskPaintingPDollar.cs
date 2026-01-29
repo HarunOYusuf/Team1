@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 using System.Collections.Generic;
 using PDollarGestureRecognizer;
 
@@ -20,6 +21,10 @@ public class MaskPaintingPDollar : MonoBehaviour
     [SerializeField] private Texture2D referencePatternPNG;   // The pattern-only PNG for comparison (Image 2)
     [SerializeField] private Color patternColor = Color.red;  // Color to detect in the pattern
     [SerializeField] private float colorTolerance = 0.3f;
+    
+    [Header("GameManager Integration")]
+    [SerializeField] private bool useGameData = true;  // If true, load mask from GameData instead of Inspector
+    [SerializeField] private string shopSceneName = "ShopScene";  // Scene to return to after scoring
     
     [Header("Scoring")]
     [SerializeField] private float passingScore = 60f;
@@ -75,6 +80,12 @@ public class MaskPaintingPDollar : MonoBehaviour
     {
         Debug.Log("=== MaskPaintingPDollar START ===");
         
+        // Try to load mask from GameData if enabled
+        if (useGameData && GameData.Instance != null && GameData.Instance.currentMask != null)
+        {
+            LoadMaskFromGameData();
+        }
+        
         mainCamera = Camera.main;
         Debug.Log($"[1] Camera: {(mainCamera != null ? "OK" : "NULL")}");
         
@@ -88,7 +99,7 @@ public class MaskPaintingPDollar : MonoBehaviour
         
         if (spriteRenderer.sprite == null)
         {
-            Debug.LogError("[3] SpriteRenderer.sprite is NULL!");
+            Debug.LogError("[3] SpriteRenderer.sprite is NULL! Make sure MaskData has a base image assigned.");
             return;
         }
         Debug.Log($"[3] Sprite: OK");
@@ -159,11 +170,105 @@ public class MaskPaintingPDollar : MonoBehaviour
         resultText.gameObject.SetActive(false);
         Debug.Log("[10] Result text: OK");
         
-        Debug.Log("[11] Starting memory phase...");
-        StartMemoryPhase();
+        // If using GameData, skip memory phase (already happened in shop scene)
+        if (useGameData)
+        {
+            Debug.Log("[11] Using GameData - skipping memory phase, going straight to painting");
+            StartPaintingPhase();
+        }
+        else
+        {
+            Debug.Log("[11] Starting memory phase...");
+            StartMemoryPhase();
+        }
+        
         Debug.Log("=== START COMPLETE ===");
     }
     
+    void StartPaintingPhase()
+    {
+        // Hide target display if it exists
+        if (targetDisplay != null)
+            targetDisplay.SetActive(false);
+        
+        // Enable painting
+        canPaint = true;
+        memoryPhaseActive = false;
+        currentStrokeID = 0;
+        playerStrokePoints.Clear();
+        
+        // Show UI
+        if (instructionText != null)
+            instructionText.text = "Paint the pattern you memorized!";
+        
+        if (submitButton != null)
+            submitButton.gameObject.SetActive(true);
+        
+        Debug.Log("[StartPaintingPhase] Ready to paint!");
+    }
+    
+    #region GameData Integration
+    
+    void LoadMaskFromGameData()
+    {
+        MaskData mask = GameData.Instance.currentMask;
+        
+        Debug.Log($"[GameData] Loading mask: {mask.maskName}");
+        
+        // Set the textures from MaskData
+        if (mask.displayImage != null)
+            maskDisplayImage = mask.displayImage;
+        
+        if (mask.patternImage != null)
+            referencePatternPNG = mask.patternImage;
+        
+        if (mask.patternColor != default)
+            patternColor = mask.patternColor;
+        
+        // Load base image onto the painting canvas
+        if (mask.baseImage != null && spriteRenderer != null)
+        {
+            Sprite baseSprite = Sprite.Create(
+                mask.baseImage,
+                new Rect(0, 0, mask.baseImage.width, mask.baseImage.height),
+                new Vector2(0.5f, 0.5f),
+                100f
+            );
+            spriteRenderer.sprite = baseSprite;
+            Debug.Log($"[GameData] Base image loaded: {mask.baseImage.name}");
+        }
+        
+        // Set memory duration based on mask difficulty
+        viewDuration = mask.GetMemoryTime();
+        
+        Debug.Log($"[GameData] Mask loaded - Memory time: {viewDuration}s, Pattern color: {patternColor}");
+    }
+    
+    void SendScoreToGameData(float score)
+    {
+        if (GameData.Instance != null)
+        {
+            GameData.Instance.RecordScore(score);
+            Debug.Log($"[GameData] Score recorded: {score:F1}%");
+        }
+        
+        // Notify GameManager if it exists
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnPaintingComplete(score);
+        }
+    }
+    
+    /// <summary>
+    /// Return to shop scene (call from UI button or automatically)
+    /// </summary>
+    public void ReturnToShop()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(shopSceneName);
+    }
+    
+    #endregion
+
     #region Reference Pattern Extraction
     
     void CreateReferenceGesture()
@@ -760,12 +865,31 @@ public class MaskPaintingPDollar : MonoBehaviour
         }
         
         resultText.gameObject.SetActive(true);
-        instructionText.text = "Press Space to try again";
+        
+        // Send score to GameData for persistence between scenes
+        if (useGameData)
+        {
+            SendScoreToGameData(score);
+            instructionText.text = "Returning to shop...";
+            
+            // Auto-return to shop after delay
+            StartCoroutine(AutoReturnToShop(2f));
+        }
+        else
+        {
+            instructionText.text = "Press Space to try again";
+        }
         
         Debug.Log($"=== FINAL RESULT ===");
         Debug.Log($"Score: {score:F1}%");
         Debug.Log($"Result: {(passed ? "PASSED" : "FAILED")}");
         Debug.Log($"====================");
+    }
+    
+    IEnumerator AutoReturnToShop(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ReturnToShop();
     }
     
     void Restart()

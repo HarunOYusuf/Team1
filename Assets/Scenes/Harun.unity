@@ -1086,7 +1086,7 @@ MonoBehaviour:
   samplePointCount: 128
   shapeWeight: 0.5
   quadrantWeight: 0.5
-  gridDivisions: 2
+  gridDivisions: 4
   emptyQuadrantPenalty: 50
   targetDisplay: {fileID: 20776207}
   targetImage: {fileID: 1038047439}
@@ -1095,6 +1095,8 @@ MonoBehaviour:
   resultText: {fileID: 878356755}
   viewDuration: 5
   showDebugInfo: 1
+  showQuadrantOverlay: 0
+  quadrantLineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   referencePointCount: 0
   playerPointCount: 0
   rawDistance: 0
