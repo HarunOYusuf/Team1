@@ -792,9 +792,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Instruction appear here
-
-'
+  m_text: Fuck this shit man
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1082,6 +1080,8 @@ MonoBehaviour:
   referencePatternPNG: {fileID: 2800000, guid: bec0f42b88ba1514795f8f5cec73af88, type: 3}
   patternColor: {r: 1, g: 0, b: 0, a: 1}
   colorTolerance: 0.3
+  useGameData: 1
+  shopSceneName: ShopScene
   passingScore: 60
   samplePointCount: 128
   shapeWeight: 0.5
