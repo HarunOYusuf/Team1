@@ -18,16 +18,26 @@ public class BrightnessController : MonoBehaviour
 
     private void Start()
     {
-        // Load saved brightness or default to middle
+        // Defensive check to prevent NullReferenceException
+        if (brightnessOverlay == null || brightnessSlider == null)
+        {
+            Debug.LogError(
+                "BrightnessController ERROR: Missing references.\n" +
+                "Ensure BrightnessOverlay (Image) and BrightnessSlider (Slider) are assigned."
+            );
+            return;
+        }
+
+        // Load saved brightness (default = middle)
         float savedBrightness = PlayerPrefs.GetFloat(BrightnessKey, 0.5f);
 
-        // Set slider without triggering callbacks
+        // Set slider without firing events
         brightnessSlider.SetValueWithoutNotify(savedBrightness);
 
-        // Apply brightness once on startup
+        // Apply brightness once at startup
         ApplyBrightness(savedBrightness);
 
-        // Listen for user changes AFTER setup
+        // Listen for changes AFTER setup
         brightnessSlider.onValueChanged.AddListener(ApplyBrightness);
     }
 
@@ -36,7 +46,7 @@ public class BrightnessController : MonoBehaviour
         // Invert so slider UP = brighter
         float invertedValue = 1f - value;
 
-        // Map into safe darkness range
+        // Map to safe darkness range
         float darkness = Mathf.Lerp(minDarkness, maxDarkness, invertedValue);
 
         // Apply overlay alpha
@@ -44,7 +54,7 @@ public class BrightnessController : MonoBehaviour
         color.a = darkness;
         brightnessOverlay.color = color;
 
-        // Save setting
+        // Save preference
         PlayerPrefs.SetFloat(BrightnessKey, value);
         PlayerPrefs.Save();
     }

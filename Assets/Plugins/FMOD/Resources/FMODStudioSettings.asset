@@ -414,8 +414,17 @@ MonoBehaviour:
   VirtualChannelSettings: []
   RealChannelSettings: []
   Plugins: []
+<<<<<<< Updated upstream
   MasterBanks: []
   Banks: []
+=======
+  MasterBanks:
+  - Master
+  Banks:
+  - In_game
+  - Main Menu
+  - UI
+>>>>>>> Stashed changes
   BanksToLoad: []
   LiveUpdatePort: 9264
   EnableMemoryTracking: 0
