@@ -20,6 +20,75 @@ MonoBehaviour:
   - Name: Desktop
     Value: 7392
   Exists: 1
+--- !u!114 &-8812977924766522330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/In Game
+  m_EditorClassIdentifier: 
+  Path: event:/In Game
+  Guid:
+    Data1: 1411740364
+    Data2: 1274156725
+    Data3: -962171744
+    Data4: 1872278283
+  Banks:
+  - {fileID: -8368869336893788459}
+  IsStream: 1
+  Is3D: 0
+  IsOneShot: 0
+  Parameters:
+  - {fileID: 6355580156335395253}
+  - {fileID: 4287672139367151168}
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 85500
+--- !u!114 &-8368869336893788459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/In_game.bank
+  m_EditorClassIdentifier: 
+  Path: ../../../Desktop/Personal games/The Maskquerade/Fmod for game jam/Build/Desktop/In_game.bank
+  Name: In_game
+  StudioPath: bank:/In_game
+  lastModified: 639052816384115564
+  FileSizes:
+  - Name: Desktop
+    Value: 1168288
+  Exists: 1
+--- !u!114 &-8365631391711881633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Master.strings.bank
+  m_EditorClassIdentifier: 
+  Path: ../../../Desktop/Personal games/The Maskquerade/Fmod for game jam/Build/Desktop/Master.strings.bank
+  Name: Master.strings
+  StudioPath: bank:/Master.strings
+  lastModified: 639052816383258310
+  FileSizes:
+  - Name: Desktop
+    Value: 1212
+  Exists: 1
 --- !u!114 &-7170977081168799223
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44,6 +113,33 @@ MonoBehaviour:
   IsGlobal: 0
   Labels: []
   Exists: 1
+--- !u!114 &-5780501142227394319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Main Menu
+  m_EditorClassIdentifier: 
+  Path: event:/Main Menu
+  Guid:
+    Data1: -1697999308
+    Data2: 1161791167
+    Data3: -2005995356
+    Data4: -1990876089
+  Banks:
+  - {fileID: -3317179696874210950}
+  IsStream: 1
+  Is3D: 0
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 111396
 --- !u!114 &-5390529302680639428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -63,6 +159,27 @@ MonoBehaviour:
   FileSizes:
   - Name: Desktop
     Value: 1524
+  Exists: 1
+--- !u!114 &-3317179696874210950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Main Menu.bank
+  m_EditorClassIdentifier: 
+  Path: ../../../Desktop/Personal games/The Maskquerade/Fmod for game jam/Build/Desktop/Main
+    Menu.bank
+  Name: Main Menu
+  StudioPath: bank:/Main Menu
+  lastModified: 639052042230546182
+  FileSizes:
+  - Name: Desktop
+    Value: 1374816
   Exists: 1
 --- !u!114 &-1113238945543354609
 MonoBehaviour:
@@ -125,22 +242,22 @@ MonoBehaviour:
   m_Name: FMODStudioCache
   m_EditorClassIdentifier: 
   EditorBanks:
-  - {fileID: 2465763780084191271}
-  - {fileID: 5859784082564565466}
-  - {fileID: -70786709582047435}
-  - {fileID: -5390529302680639428}
-  - {fileID: -8947289893887454753}
+  - {fileID: -8365631391711881633}
+  - {fileID: -8368869336893788459}
+  - {fileID: -3317179696874210950}
+  - {fileID: 7929271377421075340}
+  - {fileID: 7023242686080310440}
   EditorEvents:
-  - {fileID: 5017965638914604132}
-  - {fileID: 4016859308709944448}
-  - {fileID: -1113238945543354609}
+  - {fileID: -8812977924766522330}
+  - {fileID: -5780501142227394319}
+  - {fileID: 3343528361044851017}
   EditorParameters: []
   MasterBanks:
-  - {fileID: -5390529302680639428}
+  - {fileID: 7929271377421075340}
   StringsBanks:
-  - {fileID: 2465763780084191271}
+  - {fileID: -8365631391711881633}
   cacheVersion: 131858
-  cacheTime: 639052510007212725
+  cacheTime: 639052816384115564
   SerializableEventsDict:
   - key: event:/In Game
     index: 0
@@ -168,6 +285,33 @@ MonoBehaviour:
   - Name: Desktop
     Value: 1164
   Exists: 1
+--- !u!114 &3343528361044851017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Button Press
+  m_EditorClassIdentifier: 
+  Path: event:/Button Press
+  Guid:
+    Data1: -557732377
+    Data2: 1137664280
+    Data3: -638349651
+    Data4: 1075156217
+  Banks:
+  - {fileID: 7023242686080310440}
+  IsStream: 0
+  Is3D: 0
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
 --- !u!114 &4016859308709944448
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -195,6 +339,30 @@ MonoBehaviour:
   MinDistance: 1
   MaxDistance: 20
   Length: 111396
+--- !u!114 &4287672139367151168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
+  m_Name: parameter:/In Game/MusicState
+  m_EditorClassIdentifier: 
+  Name: MusicState
+  StudioPath: 
+  Min: 0
+  Max: 1
+  Default: 0
+  ID:
+    data1: 1796390255
+    data2: 3343233470
+  Type: 0
+  IsGlobal: 0
+  Labels: []
+  Exists: 1
 --- !u!114 &5017965638914604132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -242,4 +410,68 @@ MonoBehaviour:
   FileSizes:
   - Name: Desktop
     Value: 1168128
+  Exists: 1
+--- !u!114 &6355580156335395253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fecb8ef7f94ca804a8ab72049b86782e, type: 3}
+  m_Name: parameter:/In Game/paused
+  m_EditorClassIdentifier: 
+  Name: paused
+  StudioPath: 
+  Min: 0
+  Max: 1
+  Default: 0
+  ID:
+    data1: 832373944
+    data2: 3124620182
+  Type: 0
+  IsGlobal: 0
+  Labels: []
+  Exists: 1
+--- !u!114 &7023242686080310440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/UI.bank
+  m_EditorClassIdentifier: 
+  Path: ../../../Desktop/Personal games/The Maskquerade/Fmod for game jam/Build/Desktop/UI.bank
+  Name: UI
+  StudioPath: bank:/UI
+  lastModified: 639052509996653203
+  FileSizes:
+  - Name: Desktop
+    Value: 7392
+  Exists: 1
+--- !u!114 &7929271377421075340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Master.bank
+  m_EditorClassIdentifier: 
+  Path: ../../../Desktop/Personal games/The Maskquerade/Fmod for game jam/Build/Desktop/Master.bank
+  Name: Master
+  StudioPath: bank:/Master
+  lastModified: 639052816383243259
+  FileSizes:
+  - Name: Desktop
+    Value: 1524
   Exists: 1
