@@ -92,6 +92,19 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 76de306fc6d96464c9fd4e75f3588b9c, type: 2}
   - {fileID: 11400000, guid: 45165990bad833c4389c77af688f3139, type: 2}
   - {fileID: 11400000, guid: ef3deb5fbd87a204cb32048bf986e199, type: 2}
+  - {fileID: 11400000, guid: 5cb269daa20abf34daa43d6ebd6b1f28, type: 2}
+  - {fileID: 11400000, guid: a168d4b6c0139af41bcd56ff227ca58a, type: 2}
+  - {fileID: 11400000, guid: 9a4bc8f54468a3d47b7aa16d1904e94b, type: 2}
+  - {fileID: 11400000, guid: 05222fdd3594f4249b857a451fda7fc5, type: 2}
+  - {fileID: 11400000, guid: f850e5e82147b764494a4ac38da03a47, type: 2}
+  - {fileID: 11400000, guid: b9da61929cf08b644b4e4d1b9844947b, type: 2}
+  - {fileID: 11400000, guid: 3d68ca88c668ca0459c888f383df1f24, type: 2}
+  - {fileID: 11400000, guid: 377c81e56e05d8f4b9139a5da9d07896, type: 2}
+  - {fileID: 11400000, guid: 22026fa9a4bc4a140a8f847faf8f50f7, type: 2}
+  - {fileID: 11400000, guid: 0eb8281a14d5166408b0a2e514ce53b1, type: 2}
+  - {fileID: 11400000, guid: 6194952eba222494c8592d7e7d098b01, type: 2}
+  - {fileID: 11400000, guid: d8b2d58457db9d74690641696dcd68bc, type: 2}
+  - {fileID: 11400000, guid: 1b907956a7f966245b395ab87f4c05aa, type: 2}
   dayResults: []
 --- !u!1 &6210238201119038576
 GameObject:

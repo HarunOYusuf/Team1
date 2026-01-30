@@ -2892,6 +2892,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ----SHOP VIEW---- wip (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 5066407079466600125, guid: f05670d7bf68ea84e954441762878bf1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7815414554790771071, guid: f05670d7bf68ea84e954441762878bf1, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
