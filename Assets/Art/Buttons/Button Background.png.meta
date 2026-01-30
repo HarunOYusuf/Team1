@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 69b053c8900ab7b48a48151bfdbb44ca
+guid: 1459faed7841903449e4b90280b6cb07
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2032338526232580436
-    second: dialog Box_0
+      213: 2125108845252678556
+    second: Button Background_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -52,7 +52,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
-  spriteBorder: {x: 58, y: 65, z: 62, w: 57}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: dialog Box_0
+      name: Button Background_0
       rect:
         serializedVersion: 2
-        x: 4
+        x: 0
         y: 0
-        width: 533
-        height: 250
+        width: 321
+        height: 92
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4511f6f2f11543c10800000000000000
-      internalID: 2032338526232580436
+      spriteID: c9393564c37ed7d10800000000000000
+      internalID: 2125108845252678556
       vertices: []
       indices: 
       edges: []
@@ -126,7 +126,7 @@ TextureImporter:
     physicsShape: []
     bones: []
     spriteID: 5e97eb03825dee720800000000000000
-    internalID: 1537655665
+    internalID: 0
     vertices: []
     indices: 
     edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      dialog Box_0: 2032338526232580436
+      Button Background_0: 2125108845252678556
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

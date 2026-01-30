@@ -37,6 +37,26 @@ public class MaskData : ScriptableObject
     [Tooltip("The main color of the pattern (for detection)")]
     public Color patternColor = Color.red;
     
+    [Tooltip("All colors used in this mask's pattern (for multi-color detection)")]
+    public Color[] patternColors = new Color[] { Color.red };
+    
+    /// <summary>
+    /// Check if a color matches any of the pattern colors
+    /// </summary>
+    public bool IsPatternColor(Color c, float tolerance = 0.3f)
+    {
+        foreach (Color patternCol in patternColors)
+        {
+            float rDiff = Mathf.Abs(c.r - patternCol.r);
+            float gDiff = Mathf.Abs(c.g - patternCol.g);
+            float bDiff = Mathf.Abs(c.b - patternCol.b);
+            
+            if (rDiff < tolerance && gDiff < tolerance && bDiff < tolerance)
+                return true;
+        }
+        return false;
+    }
+    
     [Header("Customer Dialogue (Optional)")]
     [TextArea(2, 4)]
     public string customerRequest = "I need a mask like this...";
