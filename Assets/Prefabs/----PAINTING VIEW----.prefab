@@ -160,8 +160,8 @@ MonoBehaviour:
   shopSceneName: ShopScene
   passingScore: 60
   samplePointCount: 128
-  shapeWeight: 0.5
-  quadrantWeight: 0.5
+  shapeWeight: 0.4
+  quadrantWeight: 0.6
   gridDivisions: 8
   emptyQuadrantPenalty: 50
   targetDisplay: {fileID: 0}

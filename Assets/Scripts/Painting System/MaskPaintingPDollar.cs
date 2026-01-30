@@ -1075,10 +1075,12 @@ public class MaskPaintingPDollar : MonoBehaviour
     /// <summary>
     /// Compare reference quadrant counts to player quadrant counts WITH COLOR CHECKING
     /// 
-    /// Scoring per quadrant:
-    /// - Right location + Right color = 1.0x multiplier (full points)
-    /// - Right location + Wrong color = 0.5x multiplier (half points)
-    /// - Empty quadrant painted = penalty applied
+    /// Scoring:
+    /// 1. Calculate location score (how well positioned is the paint)
+    /// 2. Calculate overall color accuracy (what % of quadrants have correct color)
+    /// 3. Apply color accuracy as a GLOBAL multiplier to the entire quadrant score
+    /// 
+    /// This means: Right pattern + ALL wrong colors = 50% of quadrant score
     /// </summary>
     float CalculateQuadrantMatchScoreWithColor()
     {
@@ -1086,7 +1088,7 @@ public class MaskPaintingPDollar : MonoBehaviour
             return 0f;
         
         int totalCells = gridDivisions * gridDivisions;
-        float totalScore = 0f;
+        float totalLocationScore = 0f;
         float totalPenalty = 0f;
         
         // Find the max pixel count for normalization
@@ -1102,6 +1104,10 @@ public class MaskPaintingPDollar : MonoBehaviour
         
         // Calculate player's dominant color in each quadrant
         Color[] playerQuadrantColors = CalculatePlayerQuadrantColors();
+        
+        // Track color accuracy separately
+        int quadrantsWithPaint = 0;
+        int quadrantsWithCorrectColor = 0;
         
         Debug.Log($"=== QUADRANT COLOR ANALYSIS ===");
         
@@ -1128,43 +1134,37 @@ public class MaskPaintingPDollar : MonoBehaviour
             float diff = Mathf.Abs(refNormalized - playerNormalized);
             float locationScore = 1f - Mathf.Min(diff, 1f);
             
-            // Calculate color match multiplier
-            float colorMultiplier = 1.0f;
+            // Weight cells with more reference pixels as more important
+            float cellWeight = refNormalized > 0.1f ? 1f : 0.3f;
             
-            if (referenceQuadrantColors != null && i < referenceQuadrantColors.Length && playerPaintedHere)
+            totalLocationScore += locationScore * cellWeight;
+            
+            // Track color accuracy for quadrants that SHOULD have paint
+            if (referenceQuadrantColors != null && i < referenceQuadrantColors.Length && !isRefEmpty)
             {
                 Color refColor = referenceQuadrantColors[i];
                 Color playerColor = playerQuadrantColors[i];
                 
-                if (refColor != Color.clear && playerColor != Color.clear)
+                if (refColor != Color.clear)
                 {
-                    bool colorMatches = ColorsMatch(refColor, playerColor);
+                    quadrantsWithPaint++;
                     
-                    if (colorMatches)
+                    if (playerColor != Color.clear && ColorsMatch(refColor, playerColor))
                     {
-                        colorMultiplier = 1.0f;  // Right location + Right color
-                        Debug.Log($"Q{i}: COLOR MATCH! Ref={ColorName(refColor)}, Player={ColorName(playerColor)} -> 1.0x");
+                        quadrantsWithCorrectColor++;
+                        Debug.Log($"Q{i}: COLOR MATCH! Ref={ColorName(refColor)}, Player={ColorName(playerColor)}");
                     }
                     else
                     {
-                        colorMultiplier = 0.5f;  // Right location + Wrong color
-                        Debug.Log($"Q{i}: COLOR MISMATCH! Ref={ColorName(refColor)}, Player={ColorName(playerColor)} -> 0.5x");
+                        Debug.Log($"Q{i}: COLOR WRONG! Ref={ColorName(refColor)}, Player={ColorName(playerColor)}");
                     }
                 }
             }
             
-            // Apply color multiplier to location score
-            float cellScore = locationScore * colorMultiplier;
-            
-            // Weight cells with more reference pixels as more important
-            float cellWeight = refNormalized > 0.1f ? 1f : 0.3f;
-            
-            totalScore += cellScore * cellWeight;
-            
-            Debug.Log($"Q{i}: Location={locationScore:F2}, Color={colorMultiplier}x, Cell Score={cellScore:F2}");
+            Debug.Log($"Q{i}: Location Score={locationScore:F2}, Weight={cellWeight:F1}");
         }
         
-        // Normalize to 0-100
+        // Normalize location score to 0-100
         float maxPossibleScore = 0f;
         for (int i = 0; i < totalCells; i++)
         {
@@ -1173,19 +1173,40 @@ public class MaskPaintingPDollar : MonoBehaviour
             maxPossibleScore += cellWeight;
         }
         
-        float baseScore = (totalScore / maxPossibleScore) * 100f;
+        float locationScorePercent = (totalLocationScore / maxPossibleScore) * 100f;
+        
+        // Calculate GLOBAL color multiplier
+        // If all colors wrong = 0.5x, all colors right = 1.0x
+        float colorAccuracy = quadrantsWithPaint > 0 
+            ? (float)quadrantsWithCorrectColor / quadrantsWithPaint 
+            : 1f;
+        
+        // Color multiplier ranges from 0.5 (all wrong) to 1.0 (all correct)
+        float colorMultiplier = 0.5f + (colorAccuracy * 0.5f);
+        
+        Debug.Log($"--- COLOR SUMMARY ---");
+        Debug.Log($"Quadrants with paint: {quadrantsWithPaint}");
+        Debug.Log($"Correct colors: {quadrantsWithCorrectColor}");
+        Debug.Log($"Color accuracy: {colorAccuracy * 100f:F1}%");
+        Debug.Log($"Color multiplier: {colorMultiplier:F2}x");
+        
+        // Apply color multiplier to ENTIRE location score
+        float scoreAfterColor = locationScorePercent * colorMultiplier;
         
         // Apply penalty for painting in empty quadrants
         float penaltyMultiplier = 1f - Mathf.Min(totalPenalty, 1f);
-        float finalQuadrantScore = baseScore * penaltyMultiplier;
+        float finalQuadrantScore = scoreAfterColor * penaltyMultiplier;
         
         if (emptyQuadrantViolations > 0)
         {
             Debug.Log($"Empty quadrant violations: {emptyQuadrantViolations}, Penalty: {(1f - penaltyMultiplier) * 100f:F1}%");
         }
         
-        Debug.Log($"Quadrant Score (with color): {finalQuadrantScore:F1}%");
-        Debug.Log($"===============================");
+        Debug.Log($"--- QUADRANT SCORE BREAKDOWN ---");
+        Debug.Log($"Location Score: {locationScorePercent:F1}%");
+        Debug.Log($"After Color ({colorMultiplier:F2}x): {scoreAfterColor:F1}%");
+        Debug.Log($"Final Quadrant Score: {finalQuadrantScore:F1}%");
+        Debug.Log($"================================");
         
         return finalQuadrantScore;
     }
