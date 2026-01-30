@@ -91,7 +91,7 @@ MonoBehaviour:
   Path: Fmod for game jam/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 639053837690282740
+  lastModified: 639052933851243834
   FileSizes:
   - Name: Desktop
     Value: 1524
@@ -222,7 +222,7 @@ MonoBehaviour:
   Path: Fmod for game jam/Build/Desktop/UI.bank
   Name: UI
   StudioPath: bank:/UI
-  lastModified: 639053837690771027
+  lastModified: 639052933851394707
   FileSizes:
   - Name: Desktop
     Value: 7392
@@ -370,7 +370,7 @@ MonoBehaviour:
   StringsBanks:
   - {fileID: 3384348806921716151}
   cacheVersion: 131858
-  cacheTime: 639053837690771027
+  cacheTime: 639052933851394707
   SerializableEventsDict:
   - key: event:/In Game
     index: 0
@@ -464,7 +464,7 @@ MonoBehaviour:
   Path: Fmod for game jam/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 639053837690302740
+  lastModified: 639052933851384142
   FileSizes:
   - Name: Desktop
     Value: 1212
@@ -627,7 +627,7 @@ MonoBehaviour:
   Path: Fmod for game jam/Build/Desktop/In_game.bank
   Name: In_game
   StudioPath: bank:/In_game
-  lastModified: 639053837675956949
+  lastModified: 639052933850967811
   FileSizes:
   - Name: Desktop
     Value: 1168288
@@ -700,7 +700,7 @@ MonoBehaviour:
   Path: Fmod for game jam/Build/Desktop/Main Menu.bank
   Name: Main Menu
   StudioPath: bank:/Main Menu
-  lastModified: 639053837690167334
+  lastModified: 639052933851083048
   FileSizes:
   - Name: Desktop
     Value: 1374816

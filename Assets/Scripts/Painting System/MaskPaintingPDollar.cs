@@ -77,6 +77,9 @@ public class MaskPaintingPDollar : MonoBehaviour
     private Gesture referenceGesture;
     private List<Vector2> playerStrokePoints = new List<Vector2>();
     private int currentStrokeID = 0;
+    
+    // Store color information per quadrant from reference
+    private Color[] referenceQuadrantColors;
 
     public UnityEvent<float> onPass;
     public UnityEvent<float> onFail;
@@ -298,7 +301,7 @@ public class MaskPaintingPDollar : MonoBehaviour
     }
     
     /// <summary>
-    /// Set the reference pattern to compare against (called by GameSceneManager)
+    /// Set the reference pattern to compare against (called by GameSceneManager) - single color version
     /// </summary>
     public void SetReferencePattern(Texture2D pattern, Color color)
     {
@@ -308,6 +311,7 @@ public class MaskPaintingPDollar : MonoBehaviour
         
         // Recreate reference gesture
         CreateReferenceGesture();
+        CreateReferenceColorMap();
         
         Debug.Log($"[MaskPaintingPDollar] Reference pattern set: {(pattern != null ? pattern.name : "null")}");
     }
@@ -329,9 +333,6 @@ public class MaskPaintingPDollar : MonoBehaviour
         Debug.Log($"[MaskPaintingPDollar] Reference pattern set with {colors.Length} colors");
     }
     
-    // Store color information per quadrant from reference
-    private Color[] referenceQuadrantColors;
-    
     /// <summary>
     /// Create a map of which colors are in which quadrants of the reference
     /// </summary>
@@ -351,7 +352,9 @@ public class MaskPaintingPDollar : MonoBehaviour
             for (int cellX = 0; cellX < gridDivisions; cellX++)
             {
                 int cellIndex = cellY * gridDivisions + cellX;
-                Dictionary<Color, int> colorCounts = new Dictionary<Color, int>();
+                
+                // Count each color type in this quadrant
+                int redCount = 0, yellowCount = 0, blueCount = 0;
                 
                 int startX = cellX * cellWidth;
                 int startY = cellY * cellHeight;
@@ -364,50 +367,28 @@ public class MaskPaintingPDollar : MonoBehaviour
                         
                         if (pixel.a > 0.1f)  // Not transparent
                         {
-                            // Match to closest reference color
-                            Color matchedColor = GetClosestReferenceColor(pixel);
-                            if (matchedColor != Color.clear)
-                            {
-                                if (colorCounts.ContainsKey(matchedColor))
-                                    colorCounts[matchedColor]++;
-                                else
-                                    colorCounts[matchedColor] = 1;
-                            }
+                            if (IsRedColor(pixel)) redCount++;
+                            else if (IsYellowColor(pixel)) yellowCount++;
+                            else if (IsBlueColor(pixel)) blueCount++;
                         }
                     }
                 }
                 
                 // Find dominant color in this quadrant
-                Color dominantColor = Color.clear;
-                int maxCount = 0;
-                foreach (var kvp in colorCounts)
-                {
-                    if (kvp.Value > maxCount)
-                    {
-                        maxCount = kvp.Value;
-                        dominantColor = kvp.Key;
-                    }
-                }
+                if (redCount >= yellowCount && redCount >= blueCount && redCount > 0)
+                    referenceQuadrantColors[cellIndex] = Color.red;
+                else if (yellowCount >= redCount && yellowCount >= blueCount && yellowCount > 0)
+                    referenceQuadrantColors[cellIndex] = Color.yellow;
+                else if (blueCount > 0)
+                    referenceQuadrantColors[cellIndex] = Color.blue;
+                else
+                    referenceQuadrantColors[cellIndex] = Color.clear;
                 
-                referenceQuadrantColors[cellIndex] = dominantColor;
+                Debug.Log($"[ColorMap] Quadrant {cellIndex}: R={redCount}, Y={yellowCount}, B={blueCount} -> {referenceQuadrantColors[cellIndex]}");
             }
         }
         
         Debug.Log($"[MaskPaintingPDollar] Reference color map created for {totalCells} quadrants");
-    }
-    
-    Color GetClosestReferenceColor(Color pixel)
-    {
-        foreach (Color refColor in referencePatternColors)
-        {
-            float rDiff = Mathf.Abs(pixel.r - refColor.r);
-            float gDiff = Mathf.Abs(pixel.g - refColor.g);
-            float bDiff = Mathf.Abs(pixel.b - refColor.b);
-            
-            if (rDiff < colorTolerance && gDiff < colorTolerance && bDiff < colorTolerance)
-                return refColor;
-        }
-        return Color.clear;
     }
     
     /// <summary>
@@ -503,6 +484,15 @@ public class MaskPaintingPDollar : MonoBehaviour
     
     /// <summary>
     /// Calculate and return the score without showing UI
+    /// 
+    /// SCORING FORMULA:
+    /// 1. Shape Score (50%): $P gesture recognition
+    /// 2. Quadrant Score (50%): Location + Color checking
+    ///    - Right location + Right color = 1.0x multiplier
+    ///    - Right location + Wrong color = 0.5x multiplier
+    /// 3. Final = (Shape * 0.5) + (Quadrant * 0.5)
+    /// 
+    /// Note: Template check (pass/fail gate) is done in GameSceneManager
     /// </summary>
     public float CalculateScore()
     {
@@ -526,19 +516,24 @@ public class MaskPaintingPDollar : MonoBehaviour
         // Create player gesture
         Gesture playerGesture = new Gesture(playerPoints.ToArray(), "PlayerDrawing");
         
-        // === PART 1: $P Shape Score ===
+        // === PART 1: $P Shape Score (50% weight) ===
         float distance = CalculateGestureDistance(referenceGesture, playerGesture);
         rawDistance = distance;
         shapeScore = ConvertDistanceToScore(distance);
         
-        // === PART 2: Quadrant Pixel Score ===
-        playerQuadrantCounts = CalculateQuadrantPixelCounts(paintTexture);
-        quadrantScore = CalculateQuadrantMatchScore();
+        // === PART 2: Quadrant Score with Color Checking (50% weight) ===
+        // Count player painted pixels (any color: red, yellow, blue)
+        playerQuadrantCounts = CalculateQuadrantPixelCounts(paintTexture, true);
+        quadrantScore = CalculateQuadrantMatchScoreWithColor();
         
         // === COMBINED SCORE ===
         finalScore = (shapeScore * shapeWeight) + (quadrantScore * quadrantWeight);
         
-        Debug.Log($"[MaskPaintingPDollar] Score calculated - Shape: {shapeScore:F1}%, Quadrant: {quadrantScore:F1}%, Final: {finalScore:F1}%");
+        Debug.Log($"=== SCORING BREAKDOWN ===");
+        Debug.Log($"Shape Score ($P): {shapeScore:F1}% (weight: {shapeWeight})");
+        Debug.Log($"Quadrant Score (with color): {quadrantScore:F1}% (weight: {quadrantWeight})");
+        Debug.Log($"Final Score: {finalScore:F1}%");
+        Debug.Log($"=========================");
         
         return finalScore;
     }
@@ -619,15 +614,9 @@ public class MaskPaintingPDollar : MonoBehaviour
             return;
         }
         Debug.Log($"Reference PNG: {referencePatternPNG.name} ({referencePatternPNG.width}x{referencePatternPNG.height})");
-        Debug.Log($"Looking for color: R={patternColor.r:F2} G={patternColor.g:F2} B={patternColor.b:F2}");
-        Debug.Log($"Color tolerance: {colorTolerance}");
         
-        // Extract points from the reference pattern
+        // Extract ALL colored points from the reference pattern (red, yellow, blue)
         List<PDollarGestureRecognizer.Point> points = new List<PDollarGestureRecognizer.Point>();
-        
-        // Sample some pixels to debug color detection
-        int sampleCount = 0;
-        int matchCount = 0;
         
         try
         {
@@ -637,21 +626,14 @@ public class MaskPaintingPDollar : MonoBehaviour
                 {
                     Color pixel = referencePatternPNG.GetPixel(x, y);
                     
-                    // Log first 5 non-transparent pixels we find
-                    if (pixel.a > 0.1f && sampleCount < 5)
-                    {
-                        Debug.Log($"Sample pixel at ({x},{y}): R={pixel.r:F2} G={pixel.g:F2} B={pixel.b:F2} A={pixel.a:F2}");
-                        sampleCount++;
-                    }
-                    
-                    if (IsPatternColor(pixel))
+                    // Check if this pixel is any pattern color (red, yellow, or blue)
+                    if (pixel.a > 0.1f && (IsRedColor(pixel) || IsYellowColor(pixel) || IsBlueColor(pixel)))
                     {
                         points.Add(new PDollarGestureRecognizer.Point(x, y, 0));
-                        matchCount++;
                     }
                 }
             }
-            Debug.Log($"Scanned {referencePatternPNG.width * referencePatternPNG.height} pixels, found {matchCount} matching points");
+            Debug.Log($"Scanned {referencePatternPNG.width * referencePatternPNG.height} pixels, found {points.Count} pattern points");
         }
         catch (System.Exception e)
         {
@@ -663,7 +645,6 @@ public class MaskPaintingPDollar : MonoBehaviour
         if (points.Count < 10)
         {
             Debug.LogError($"Not enough points extracted from reference pattern! Found: {points.Count}");
-            Debug.LogError("Check that Pattern Color matches the color in your PNG!");
             return;
         }
         
@@ -678,43 +659,11 @@ public class MaskPaintingPDollar : MonoBehaviour
         // Create the reference gesture
         referenceGesture = new Gesture(points.ToArray(), "ReferencePattern");
         
-        // Calculate reference quadrant pixel counts
-        referenceQuadrantCounts = CalculateQuadrantPixelCounts(referencePatternPNG);
+        // Calculate reference quadrant pixel counts (pattern colors only)
+        referenceQuadrantCounts = CalculateQuadrantPixelCounts(referencePatternPNG, false);
         Debug.Log($"Reference quadrant counts: [{string.Join(", ", referenceQuadrantCounts)}]");
         
         Debug.Log($"SUCCESS: Reference gesture created with {referencePointCount} original points, sampled to {points.Count}");
-    }
-    
-    List<PDollarGestureRecognizer.Point> ExtractPointsFromTexture(Texture2D texture)
-    {
-        List<PDollarGestureRecognizer.Point> points = new List<PDollarGestureRecognizer.Point>();
-        
-        for (int x = 0; x < texture.width; x++)
-        {
-            for (int y = 0; y < texture.height; y++)
-            {
-                Color pixel = texture.GetPixel(x, y);
-                
-                if (IsPatternColor(pixel))
-                {
-                    // Add point (using strokeID 0 for all points from PNG)
-                    points.Add(new PDollarGestureRecognizer.Point(x, y, 0));
-                }
-            }
-        }
-        
-        return points;
-    }
-    
-    bool IsPatternColor(Color c)
-    {
-        if (c.a < 0.1f) return false;
-        
-        float rDiff = Mathf.Abs(c.r - patternColor.r);
-        float gDiff = Mathf.Abs(c.g - patternColor.g);
-        float bDiff = Mathf.Abs(c.b - patternColor.b);
-        
-        return (rDiff < colorTolerance && gDiff < colorTolerance && bDiff < colorTolerance);
     }
     
     List<PDollarGestureRecognizer.Point> SamplePoints(List<PDollarGestureRecognizer.Point> points, int targetCount)
@@ -742,7 +691,8 @@ public class MaskPaintingPDollar : MonoBehaviour
         if (memoryPhaseActive)
         {
             timer -= Time.deltaTime;
-            instructionText.text = $"Memorize this pattern! {Mathf.Ceil(timer)}s";
+            if (instructionText != null)
+                instructionText.text = $"Memorize this pattern! {Mathf.Ceil(timer)}s";
             
             if (timer <= 0)
             {
@@ -792,15 +742,9 @@ public class MaskPaintingPDollar : MonoBehaviour
             return;
         }
         
-        if (targetImage == null)
+        if (targetImage == null || targetDisplay == null)
         {
-            Debug.LogError("Cannot start memory phase: targetImage is NULL");
-            return;
-        }
-        
-        if (targetDisplay == null)
-        {
-            Debug.LogError("Cannot start memory phase: targetDisplay is NULL");
+            Debug.LogError("Cannot start memory phase: targetImage or targetDisplay is NULL");
             return;
         }
         
@@ -828,14 +772,17 @@ public class MaskPaintingPDollar : MonoBehaviour
     
     void EndMemoryPhase()
     {
-        targetDisplay.SetActive(false);
+        if (targetDisplay != null)
+            targetDisplay.SetActive(false);
         memoryPhaseActive = false;
         canPaint = true;
         currentStrokeID = 0;
         playerStrokePoints.Clear();
         
-        instructionText.text = "Now draw the pattern!";
-        submitButton.gameObject.SetActive(true);
+        if (instructionText != null)
+            instructionText.text = "Now draw the pattern!";
+        if (submitButton != null)
+            submitButton.gameObject.SetActive(true);
     }
     
     #endregion
@@ -924,53 +871,16 @@ public class MaskPaintingPDollar : MonoBehaviour
     public void OnSubmit()
     {
         canPaint = false;
-        submitButton.gameObject.SetActive(false);
+        if (submitButton != null)
+            submitButton.gameObject.SetActive(false);
         
-        // Convert player's stroke points to $P Points
-        List<PDollarGestureRecognizer.Point> playerPoints = ConvertPlayerDrawingToPoints();
-        
-        if (playerPoints.Count < 10)
-        {
-            ShowResult(0, "Not enough drawing detected!");
-            return;
-        }
-        
-        playerPointCount = playerPoints.Count;
-        
-        // Sample if needed
-        if (playerPoints.Count > samplePointCount)
-        {
-            playerPoints = SamplePoints(playerPoints, samplePointCount);
-        }
-        
-        // Create player gesture
-        Gesture playerGesture = new Gesture(playerPoints.ToArray(), "PlayerDrawing");
-        
-        // === PART 1: $P Shape Score ===
-        float distance = CalculateGestureDistance(referenceGesture, playerGesture);
-        rawDistance = distance;
-        shapeScore = ConvertDistanceToScore(distance);
-        
-        // === PART 2: Quadrant Pixel Score ===
-        playerQuadrantCounts = CalculateQuadrantPixelCounts(paintTexture);
-        quadrantScore = CalculateQuadrantMatchScore();
-        
-        // === COMBINED SCORE ===
-        finalScore = (shapeScore * shapeWeight) + (quadrantScore * quadrantWeight);
-        
-        Debug.Log($"=== SCORING BREAKDOWN ===");
-        Debug.Log($"Shape Score ($P): {shapeScore:F1}% (weight: {shapeWeight})");
-        Debug.Log($"Quadrant Score: {quadrantScore:F1}% (weight: {quadrantWeight})");
-        Debug.Log($"Final Score: {finalScore:F1}%");
-        Debug.Log($"Reference Quadrants: [{string.Join(", ", referenceQuadrantCounts)}]");
-        Debug.Log($"Player Quadrants: [{string.Join(", ", playerQuadrantCounts)}]");
-        Debug.Log($"=========================");
+        float score = CalculateScore();
         
         string details = showDebugInfo 
-            ? $"Shape: {shapeScore:F1}% | Quadrant: {quadrantScore:F1}%\nRef Q: [{string.Join(", ", referenceQuadrantCounts)}]\nYour Q: [{string.Join(", ", playerQuadrantCounts)}]"
+            ? $"Shape: {shapeScore:F1}% | Quadrant: {quadrantScore:F1}%"
             : "";
         
-        ShowResult(finalScore, details);
+        ShowResult(score, details);
     }
     
     List<PDollarGestureRecognizer.Point> ConvertPlayerDrawingToPoints()
@@ -978,7 +888,6 @@ public class MaskPaintingPDollar : MonoBehaviour
         List<PDollarGestureRecognizer.Point> points = new List<PDollarGestureRecognizer.Point>();
         
         // Option 1: Use stroke points recorded while drawing
-        // This captures the actual drawing motion
         int strokeID = 0;
         Vector2 lastPos = Vector2.zero;
         
@@ -995,10 +904,23 @@ public class MaskPaintingPDollar : MonoBehaviour
         }
         
         // If stroke recording didn't capture enough, fall back to scanning the texture
-        if (points.Count < 10)
+        if (points.Count < 10 && paintTexture != null)
         {
             points.Clear();
-            points = ExtractPointsFromTexture(paintTexture);
+            
+            for (int x = 0; x < paintTexture.width; x++)
+            {
+                for (int y = 0; y < paintTexture.height; y++)
+                {
+                    Color pixel = paintTexture.GetPixel(x, y);
+                    
+                    // Check for any painted color
+                    if (pixel.a > 0.5f && (IsRedColor(pixel) || IsYellowColor(pixel) || IsBlueColor(pixel)))
+                    {
+                        points.Add(new PDollarGestureRecognizer.Point(x, y, 0));
+                    }
+                }
+            }
         }
         
         return points;
@@ -1009,15 +931,23 @@ public class MaskPaintingPDollar : MonoBehaviour
     /// </summary>
     float CalculateGestureDistance(Gesture g1, Gesture g2)
     {
-        // Use the same algorithm as PointCloudRecognizer but return the distance
+        if (g1 == null || g2 == null)
+        {
+            Debug.LogError("Cannot calculate gesture distance - one or both gestures are null!");
+            return float.MaxValue;
+        }
         return GreedyCloudMatch(g1.Points, g2.Points);
     }
     
     float GreedyCloudMatch(PDollarGestureRecognizer.Point[] points1, PDollarGestureRecognizer.Point[] points2)
     {
         int n = points1.Length;
+        if (n == 0 || points2.Length == 0) return float.MaxValue;
+        
         float eps = 0.5f;
         int step = (int)Mathf.Floor(Mathf.Pow(n, 1.0f - eps));
+        if (step < 1) step = 1;
+        
         float minDistance = float.MaxValue;
         
         for (int i = 0; i < n; i += step)
@@ -1056,9 +986,13 @@ public class MaskPaintingPDollar : MonoBehaviour
                 }
             }
             
-            matched[index] = true;
-            float weight = 1.0f - ((i - startIndex + n) % n) / (1.0f * n);
-            sum += weight * minDistance;
+            if (index >= 0)
+            {
+                matched[index] = true;
+                float weight = 1.0f - ((i - startIndex + n) % n) / (1.0f * n);
+                sum += weight * minDistance;
+            }
+            
             i = (i + 1) % n;
             
         } while (i != startIndex);
@@ -1076,19 +1010,11 @@ public class MaskPaintingPDollar : MonoBehaviour
     /// </summary>
     float ConvertDistanceToScore(float distance)
     {
-        // $P distances for normalized gestures typically range from 0 (identical) to ~2 (very different)
-        // We'll use an exponential decay to convert to percentage
-        
-        // Adjust these values to tune difficulty:
-        float maxDistance = 1.5f;  // Distance at which score becomes 0
+        float maxDistance = 1.5f;
         
         if (distance >= maxDistance)
             return 0f;
         
-        // Linear conversion (simple)
-        // float score = (1f - (distance / maxDistance)) * 100f;
-        
-        // Exponential conversion (more forgiving for small errors)
         float normalized = distance / maxDistance;
         float score = (1f - Mathf.Pow(normalized, 0.7f)) * 100f;
         
@@ -1097,12 +1023,14 @@ public class MaskPaintingPDollar : MonoBehaviour
     
     #endregion
     
-    #region Quadrant Pixel Matching
+    #region Quadrant Pixel Matching with Color
     
     /// <summary>
-    /// Divide the texture into a grid and count pattern-colored pixels in each cell
+    /// Divide the texture into a grid and count pixels in each cell
     /// </summary>
-    int[] CalculateQuadrantPixelCounts(Texture2D texture)
+    /// <param name="texture">The texture to analyze</param>
+    /// <param name="isPlayerPainting">If true, counts any painted color (red/yellow/blue). If false, counts pattern colors.</param>
+    int[] CalculateQuadrantPixelCounts(Texture2D texture, bool isPlayerPainting)
     {
         int totalCells = gridDivisions * gridDivisions;
         int[] counts = new int[totalCells];
@@ -1116,7 +1044,20 @@ public class MaskPaintingPDollar : MonoBehaviour
             {
                 Color pixel = texture.GetPixel(x, y);
                 
-                if (IsPatternColor(pixel))
+                bool shouldCount = false;
+                
+                if (isPlayerPainting)
+                {
+                    // For player painting: count any painted color (red, yellow, blue)
+                    shouldCount = pixel.a > 0.5f && (IsRedColor(pixel) || IsYellowColor(pixel) || IsBlueColor(pixel));
+                }
+                else
+                {
+                    // For reference: count any pattern color
+                    shouldCount = pixel.a > 0.1f && (IsRedColor(pixel) || IsYellowColor(pixel) || IsBlueColor(pixel));
+                }
+                
+                if (shouldCount)
                 {
                     // Determine which grid cell this pixel belongs to
                     int cellX = Mathf.Min(x / cellWidth, gridDivisions - 1);
@@ -1133,14 +1074,13 @@ public class MaskPaintingPDollar : MonoBehaviour
     
     /// <summary>
     /// Compare reference quadrant counts to player quadrant counts WITH COLOR CHECKING
-    /// Returns a score from 0-100
     /// 
-    /// Scoring:
-    /// - Right location + Right color = 1.0x multiplier
-    /// - Right location + Wrong color = 0.5x multiplier
-    /// - Wrong location = penalized
+    /// Scoring per quadrant:
+    /// - Right location + Right color = 1.0x multiplier (full points)
+    /// - Right location + Wrong color = 0.5x multiplier (half points)
+    /// - Empty quadrant painted = penalty applied
     /// </summary>
-    float CalculateQuadrantMatchScore()
+    float CalculateQuadrantMatchScoreWithColor()
     {
         if (referenceQuadrantCounts == null || playerQuadrantCounts == null)
             return 0f;
@@ -1160,8 +1100,10 @@ public class MaskPaintingPDollar : MonoBehaviour
         
         int emptyQuadrantViolations = 0;
         
-        // Calculate color-aware quadrant scores
-        var playerQuadrantColorData = CalculatePlayerQuadrantColors();
+        // Calculate player's dominant color in each quadrant
+        Color[] playerQuadrantColors = CalculatePlayerQuadrantColors();
+        
+        Debug.Log($"=== QUADRANT COLOR ANALYSIS ===");
         
         for (int i = 0; i < totalCells; i++)
         {
@@ -1178,7 +1120,7 @@ public class MaskPaintingPDollar : MonoBehaviour
                 float violationAmount = (float)playerQuadrantCounts[i] / maxPlayerCount;
                 totalPenalty += violationAmount * (emptyQuadrantPenalty / 100f);
                 
-                Debug.Log($"Empty quadrant violation in Q{i}: Player painted {playerQuadrantCounts[i]} pixels where reference has {referenceQuadrantCounts[i]}");
+                Debug.Log($"Q{i}: EMPTY VIOLATION - Player painted {playerQuadrantCounts[i]} pixels in empty quadrant");
                 continue;
             }
             
@@ -1192,21 +1134,21 @@ public class MaskPaintingPDollar : MonoBehaviour
             if (referenceQuadrantColors != null && i < referenceQuadrantColors.Length && playerPaintedHere)
             {
                 Color refColor = referenceQuadrantColors[i];
-                Color playerDominantColor = playerQuadrantColorData[i];
+                Color playerColor = playerQuadrantColors[i];
                 
-                if (refColor != Color.clear && playerDominantColor != Color.clear)
+                if (refColor != Color.clear && playerColor != Color.clear)
                 {
-                    bool colorMatches = ColorsMatch(refColor, playerDominantColor);
+                    bool colorMatches = ColorsMatch(refColor, playerColor);
                     
                     if (colorMatches)
                     {
                         colorMultiplier = 1.0f;  // Right location + Right color
-                        Debug.Log($"Q{i}: Color MATCH - Reference: {refColor}, Player: {playerDominantColor}");
+                        Debug.Log($"Q{i}: COLOR MATCH! Ref={ColorName(refColor)}, Player={ColorName(playerColor)} -> 1.0x");
                     }
                     else
                     {
                         colorMultiplier = 0.5f;  // Right location + Wrong color
-                        Debug.Log($"Q{i}: Color MISMATCH - Reference: {refColor}, Player: {playerDominantColor}");
+                        Debug.Log($"Q{i}: COLOR MISMATCH! Ref={ColorName(refColor)}, Player={ColorName(playerColor)} -> 0.5x");
                     }
                 }
             }
@@ -1218,6 +1160,8 @@ public class MaskPaintingPDollar : MonoBehaviour
             float cellWeight = refNormalized > 0.1f ? 1f : 0.3f;
             
             totalScore += cellScore * cellWeight;
+            
+            Debug.Log($"Q{i}: Location={locationScore:F2}, Color={colorMultiplier}x, Cell Score={cellScore:F2}");
         }
         
         // Normalize to 0-100
@@ -1237,10 +1181,11 @@ public class MaskPaintingPDollar : MonoBehaviour
         
         if (emptyQuadrantViolations > 0)
         {
-            Debug.Log($"Empty quadrant violations: {emptyQuadrantViolations}, Penalty applied: {(1f - penaltyMultiplier) * 100f:F1}%");
+            Debug.Log($"Empty quadrant violations: {emptyQuadrantViolations}, Penalty: {(1f - penaltyMultiplier) * 100f:F1}%");
         }
         
-        Debug.Log($"Quadrant score (with color): {finalQuadrantScore:F1}%");
+        Debug.Log($"Quadrant Score (with color): {finalQuadrantScore:F1}%");
+        Debug.Log($"===============================");
         
         return finalQuadrantScore;
     }
@@ -1276,12 +1221,6 @@ public class MaskPaintingPDollar : MonoBehaviour
                     {
                         Color pixel = paintTexture.GetPixel(x, y);
                         
-                        // Skip if this was part of the original base (not painted)
-                        if (originalAlphaMap != null && x < originalAlphaMap.GetLength(0) && y < originalAlphaMap.GetLength(1))
-                        {
-                            // Only count if it's painted (different from original or on white area)
-                        }
-                        
                         if (pixel.a > 0.5f)  // Not transparent
                         {
                             // Categorize the color
@@ -1307,6 +1246,7 @@ public class MaskPaintingPDollar : MonoBehaviour
         return quadrantColors;
     }
     
+    // Color detection helpers
     bool IsRedColor(Color c)
     {
         return c.r > 0.7f && c.g < 0.4f && c.b < 0.4f;
@@ -1331,6 +1271,14 @@ public class MaskPaintingPDollar : MonoBehaviour
         return false;
     }
     
+    string ColorName(Color c)
+    {
+        if (IsRedColor(c)) return "RED";
+        if (IsYellowColor(c)) return "YELLOW";
+        if (IsBlueColor(c)) return "BLUE";
+        return "NONE";
+    }
+    
     #endregion
 
     #region Results & Reset
@@ -1341,35 +1289,20 @@ public class MaskPaintingPDollar : MonoBehaviour
         
         if (passed)
         {
-            //resultText.text = $"PASS! Score: {score:F1}%\n{details}";
-           //resultText.color = Color.green;
-
-            Debug.Log("attempting to invoke pass event");
+            Debug.Log("Attempting to invoke PASS event");
             onPass.Invoke(score);
         }
         else
         {
-            //resultText.text = $"FAIL! Score: {score:F1}% (Need {passingScore}%)\n{details}";
-            //resultText.color = Color.red;
-
-            Debug.Log("attempting to invoke fail event");
+            Debug.Log("Attempting to invoke FAIL event");
             onFail.Invoke(score);
         }
-        
-        //resultText.gameObject.SetActive(true);
         
         // Send score to GameData for persistence between scenes
         if (useGameData)
         {
             SendScoreToGameData(score);
-            //instructionText.text = "Returning to shop...";
-            
-            // Auto-return to shop after delay
             StartCoroutine(AutoReturnToShop(2f));
-        }
-        else
-        {
-            //instructionText.text = "Press Space to try again";
         }
         
         Debug.Log($"=== FINAL RESULT ===");
@@ -1387,8 +1320,11 @@ public class MaskPaintingPDollar : MonoBehaviour
     void Restart()
     {
         // Reset canvas
-        paintTexture.SetPixels(originalBaseTexture.GetPixels());
-        paintTexture.Apply();
+        if (paintTexture != null && originalBaseTexture != null)
+        {
+            paintTexture.SetPixels(originalBaseTexture.GetPixels());
+            paintTexture.Apply();
+        }
         
         // Reset tracking
         playerStrokePoints.Clear();
@@ -1400,7 +1336,8 @@ public class MaskPaintingPDollar : MonoBehaviour
         playerPointCount = 0;
         playerQuadrantCounts = null;
         
-        resultText.gameObject.SetActive(false);
+        if (resultText != null)
+            resultText.gameObject.SetActive(false);
         
         StartMemoryPhase();
     }
@@ -1412,7 +1349,7 @@ public class MaskPaintingPDollar : MonoBehaviour
     void OnGUI()
     {
         if (!showQuadrantOverlay) return;
-        if (spriteRenderer == null) return;
+        if (spriteRenderer == null || mainCamera == null) return;
         
         // Get sprite bounds in screen space
         Bounds bounds = spriteRenderer.bounds;
@@ -1478,8 +1415,11 @@ public class MaskPaintingPDollar : MonoBehaviour
                 string playerCount = playerQuadrantCounts != null && index < playerQuadrantCounts.Length 
                     ? playerQuadrantCounts[index].ToString() 
                     : "?";
+                string refColor = referenceQuadrantColors != null && index < referenceQuadrantColors.Length 
+                    ? ColorName(referenceQuadrantColors[index]) 
+                    : "?";
                 
-                GUI.Label(new Rect(cellX, cellY, cellWidth - 10, 40), $"Q{index}\nRef:{refCount}\nYou:{playerCount}", labelStyle);
+                GUI.Label(new Rect(cellX, cellY, cellWidth - 10, 60), $"Q{index} ({refColor})\nRef:{refCount}\nYou:{playerCount}", labelStyle);
             }
         }
         

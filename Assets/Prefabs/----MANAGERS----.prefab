@@ -176,7 +176,7 @@ MonoBehaviour:
   customerScript: {fileID: 0}
   memoryPhaseDuration: 2
   paintingTimerDuration: 15
-  dayDuration: 10
+  dayDuration: 60
   customerEnterDuration: 2
   customerExitDuration: 2
   resultDisplayDuration: 2
