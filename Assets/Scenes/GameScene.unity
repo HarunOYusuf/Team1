@@ -4112,8 +4112,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1443194289}
   - component: {fileID: 1443194288}
-  - component: {fileID: 1443194287}
   - component: {fileID: 1443194290}
+  - component: {fileID: 1443194291}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -4121,14 +4121,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1443194287
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1443194286}
-  m_Enabled: 1
 --- !u!20 &1443194288
 Camera:
   m_ObjectHideFlags: 0
@@ -4239,6 +4231,20 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &1443194291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443194286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c6556701af9e04380698b89f691b6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nonRigidbodyVelocity: 0
+  attenuationObject: {fileID: 0}
 --- !u!1 &1462620711
 GameObject:
   m_ObjectHideFlags: 0
@@ -4769,6 +4775,7 @@ GameObject:
   - component: {fileID: 1657556498}
   - component: {fileID: 1657556497}
   - component: {fileID: 1657556499}
+  - component: {fileID: 1657556500}
   m_Layer: 0
   m_Name: MusicManager
   m_TagString: Untagged
@@ -4823,6 +4830,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   volumeSlider: {fileID: 377464953}
+--- !u!114 &1657556500
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1657556496}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f01648d531e9ac14a94228c76e72cffe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainMenuMusicEvent:
+    Guid:
+      Data1: -1697999308
+      Data2: 1161791167
+      Data3: -2005995356
+      Data4: -1990876089
+    Path: event:/Main Menu
+  adaptiveMusicManager: {fileID: 1657556497}
 --- !u!1 &1696025491
 GameObject:
   m_ObjectHideFlags: 0

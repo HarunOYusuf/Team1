@@ -2,57 +2,51 @@ using UnityEngine;
 using FMODUnity;
 using FMOD.Studio;
 
-public class AdaptiveMusicManager : MonoBehaviour
+public class AdaptiveMusicController : MonoBehaviour
 {
+    [Header("View References")]
+    public GameObject shopView;       // "SHOP VIEW"
+    public GameObject paintingView;   // "PAINTING VIEW"
+
     [Header("FMOD")]
-    [SerializeField] private EventReference musicEvent;
+    public StudioEventEmitter musicEmitter;
+    public string musicParameterName = "MusicState";
 
     private EventInstance musicInstance;
+    private int lastState = -1;
 
-    // FMOD parameter
-    private const string MUSIC_STATE_PARAM = "MusicState";
-
-    // Music states
-    private const float SHOP_VIEW = 0f;
-    private const float PAINTING_VIEW = 1f;
-
-    private void Awake()
+    void Start()
     {
-        // Ensure only one MusicManager exists
-        if (FindObjectsOfType<AdaptiveMusicManager>().Length > 1)
+        // Safety checks
+        if (musicEmitter == null)
         {
-            Destroy(gameObject);
+            Debug.LogError("AdaptiveMusicController: Music Emitter not assigned.");
             return;
         }
 
-        DontDestroyOnLoad(gameObject);
+        musicInstance = musicEmitter.EventInstance;
+
+        // Game ALWAYS starts in shop view
+        SetMusicState(0);
     }
 
-    private void Start()
+    void Update()
     {
-        musicInstance = RuntimeManager.CreateInstance(musicEvent);
-        musicInstance.start();
-
-        // Default to shop music
-        SetShopViewMusic();
-    }
-
-    public void SetShopViewMusic()
-    {
-        musicInstance.setParameterByName(MUSIC_STATE_PARAM, SHOP_VIEW);
-    }
-
-    public void SetPaintingViewMusic()
-    {
-        musicInstance.setParameterByName(MUSIC_STATE_PARAM, PAINTING_VIEW);
-    }
-
-    private void OnDestroy()
-    {
-        if (musicInstance.isValid())
+        if (shopView != null && shopView.activeInHierarchy)
         {
-            musicInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
-            musicInstance.release();
+            SetMusicState(0);
         }
+        else if (paintingView != null && paintingView.activeInHierarchy)
+        {
+            SetMusicState(1);
+        }
+    }
+
+    void SetMusicState(int state)
+    {
+        if (state == lastState) return;
+
+        musicInstance.setParameterByName(musicParameterName, state);
+        lastState = state;
     }
 }

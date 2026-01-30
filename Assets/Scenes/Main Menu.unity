@@ -1667,7 +1667,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1887986320}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UIButtonSound, Assembly-CSharp
         m_MethodName: PlayButtonSound
         m_Mode: 1
@@ -1717,6 +1717,103 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1209074392}
   m_CullTransparentMesh: 1
+--- !u!1 &1304964354
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1304964357}
+  - component: {fileID: 1304964356}
+  - component: {fileID: 1304964355}
+  - component: {fileID: 1304964358}
+  m_Layer: 0
+  m_Name: MM_MusicManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1304964355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1304964354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5578012ad7192624da6bb72959cda8eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buttonPressEvent:
+    Guid:
+      Data1: -557732377
+      Data2: 1137664280
+      Data3: -638349651
+      Data4: 1075156217
+    Path: event:/Button Press
+--- !u!114 &1304964356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1304964354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CollisionTag: 
+  EventReference:
+    Guid:
+      Data1: -1697999308
+      Data2: 1161791167
+      Data3: -2005995356
+      Data4: -1990876089
+    Path: event:/Main Menu
+  Event: 
+  EventPlayTrigger: 1
+  EventStopTrigger: 2
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  NonRigidbodyVelocity: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: 1
+  OverrideMaxDistance: 20
+--- !u!4 &1304964357
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1304964354}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 896.5521, y: 478.78815, z: -3.5648863}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1304964358
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1304964354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ca148c54914cf241bf29dcdabf2ef32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  volumeSlider: {fileID: 1811188738}
 --- !u!1 &1343813898
 GameObject:
   m_ObjectHideFlags: 0
@@ -1813,7 +1910,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1887986320}
+      - m_Target: {fileID: 1304964355}
         m_TargetAssemblyTypeName: UIButtonSound, Assembly-CSharp
         m_MethodName: PlayButtonSound
         m_Mode: 1
@@ -1970,7 +2067,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1887986320}
+      - m_Target: {fileID: 1304964355}
         m_TargetAssemblyTypeName: UIButtonSound, Assembly-CSharp
         m_MethodName: PlayButtonSound
         m_Mode: 1
@@ -2139,7 +2236,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1887986320}
+      - m_Target: {fileID: 1304964355}
         m_TargetAssemblyTypeName: UIButtonSound, Assembly-CSharp
         m_MethodName: PlayButtonSound
         m_Mode: 1
@@ -2718,103 +2815,6 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!1 &1887986316
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1887986318}
-  - component: {fileID: 1887986317}
-  - component: {fileID: 1887986319}
-  - component: {fileID: 1887986320}
-  m_Layer: 0
-  m_Name: MM_Musicmanager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1887986317
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1887986316}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  CollisionTag: 
-  EventReference:
-    Guid:
-      Data1: -1697999308
-      Data2: 1161791167
-      Data3: -2005995356
-      Data4: -1990876089
-    Path: event:/Main Menu
-  Event: 
-  EventPlayTrigger: 1
-  EventStopTrigger: 2
-  AllowFadeout: 1
-  TriggerOnce: 0
-  Preload: 0
-  NonRigidbodyVelocity: 0
-  Params: []
-  OverrideAttenuation: 0
-  OverrideMinDistance: 1
-  OverrideMaxDistance: 20
---- !u!4 &1887986318
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1887986316}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 422.10068, y: 167.23279, z: 0.4647578}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1887986319
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1887986316}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ca148c54914cf241bf29dcdabf2ef32, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  volumeSlider: {fileID: 1811188738}
---- !u!114 &1887986320
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1887986316}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5578012ad7192624da6bb72959cda8eb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  buttonPressEvent:
-    Guid:
-      Data1: -557732377
-      Data2: 1137664280
-      Data3: -638349651
-      Data4: 1075156217
-    Path: event:/Button Press
 --- !u!1 &1920475656
 GameObject:
   m_ObjectHideFlags: 0
@@ -3183,7 +3183,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1887986320}
+      - m_Target: {fileID: 1304964355}
         m_TargetAssemblyTypeName: UIButtonSound, Assembly-CSharp
         m_MethodName: PlayButtonSound
         m_Mode: 1
@@ -3240,5 +3240,5 @@ SceneRoots:
   - {fileID: 1979747978}
   - {fileID: 1928163151}
   - {fileID: 1920475659}
-  - {fileID: 1887986318}
   - {fileID: 919800535}
+  - {fileID: 1304964357}
