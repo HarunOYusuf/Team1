@@ -477,13 +477,14 @@ GameObject:
   - component: {fileID: 64183585}
   - component: {fileID: 64183587}
   - component: {fileID: 64183586}
+  - component: {fileID: 64183588}
   m_Layer: 5
   m_Name: EODParchment
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &64183585
 RectTransform:
   m_ObjectHideFlags: 0
@@ -547,6 +548,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 64183584}
   m_CullTransparentMesh: 1
+--- !u!114 &64183588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 64183584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 254d30d5425a06e418ee8dc330fa1133, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inventory: {fileID: 0}
+  redAmountText: {fileID: 0}
+  blueAmountText: {fileID: 0}
+  yellowAmountText: {fileID: 0}
+  eodCurrencyText: {fileID: 0}
 --- !u!1 &176413967
 GameObject:
   m_ObjectHideFlags: 0
