@@ -364,9 +364,12 @@ public class GameSceneManager : MonoBehaviour
         }
         
         // TEAMMATE INTEGRATION: Trigger customer enter animation
-        // TODO: Call teammate's customer enter function
+
+        var slideInComponent = FindObjectOfType<CustomerSlideIn>();
+        if(slideInComponent) slideInComponent.BeginSlide();
+
         // Example: customerScript.SendMessage("CustomerEnter", SendMessageOptions.DontRequireReceiver);
-        
+
         yield return new WaitForSeconds(customerEnterDuration);
     }
 
@@ -679,6 +682,7 @@ public class GameSceneManager : MonoBehaviour
         // TEAMMATE INTEGRATION: Show customer reaction animation
         // TODO: Call teammate's reaction function based on score
         // Example: customerScript.SendMessage("ShowReaction", lastScore >= okayScoreThreshold);
+        paintingSystem.ShowResult(lastScore, "");
         
         yield return new WaitForSeconds(1f);
         

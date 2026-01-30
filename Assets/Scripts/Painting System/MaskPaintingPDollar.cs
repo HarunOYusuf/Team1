@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
@@ -76,6 +77,9 @@ public class MaskPaintingPDollar : MonoBehaviour
     private Gesture referenceGesture;
     private List<Vector2> playerStrokePoints = new List<Vector2>();
     private int currentStrokeID = 0;
+
+    public UnityEvent<float> onPass;
+    public UnityEvent<float> onFail;
     
     void Start()
     {
@@ -1331,35 +1335,41 @@ public class MaskPaintingPDollar : MonoBehaviour
 
     #region Results & Reset
     
-    void ShowResult(float score, string details)
+    public void ShowResult(float score, string details)
     {
         bool passed = score >= passingScore;
         
         if (passed)
         {
-            resultText.text = $"PASS! Score: {score:F1}%\n{details}";
-            resultText.color = Color.green;
+            //resultText.text = $"PASS! Score: {score:F1}%\n{details}";
+           //resultText.color = Color.green;
+
+            Debug.Log("attempting to invoke pass event");
+            onPass.Invoke(score);
         }
         else
         {
-            resultText.text = $"FAIL! Score: {score:F1}% (Need {passingScore}%)\n{details}";
-            resultText.color = Color.red;
+            //resultText.text = $"FAIL! Score: {score:F1}% (Need {passingScore}%)\n{details}";
+            //resultText.color = Color.red;
+
+            Debug.Log("attempting to invoke fail event");
+            onFail.Invoke(score);
         }
         
-        resultText.gameObject.SetActive(true);
+        //resultText.gameObject.SetActive(true);
         
         // Send score to GameData for persistence between scenes
         if (useGameData)
         {
             SendScoreToGameData(score);
-            instructionText.text = "Returning to shop...";
+            //instructionText.text = "Returning to shop...";
             
             // Auto-return to shop after delay
             StartCoroutine(AutoReturnToShop(2f));
         }
         else
         {
-            instructionText.text = "Press Space to try again";
+            //instructionText.text = "Press Space to try again";
         }
         
         Debug.Log($"=== FINAL RESULT ===");

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Events;
 
 public class CustomerSlideIn : MonoBehaviour
 {
@@ -13,16 +14,29 @@ public class CustomerSlideIn : MonoBehaviour
 
     public SpeechBubbleWorld speechBubble;
 
+    public UnityEvent OnHasSlidIn;
+
     void Start()
     {
         transform.position = startPos;
         if (speechBubble != null) speechBubble.Hide();
+        //StartCoroutine(SlideInRoutine());
+    }
+
+    public void BeginSlide(){
         StartCoroutine(SlideInRoutine());
     }
+    public void BeginSlideOut(){
+        StartCoroutine(SlideOutRoutine());
+    }
+
 
     IEnumerator SlideInRoutine()
     {
         Vector3 overshootPos = targetPos + Vector3.right * overshoot;
+
+        var newScale = transform.GetChild(0).localScale;
+        transform.GetChild(0).localScale = new Vector3(Mathf.Abs(newScale.x),newScale.y,newScale.z);
 
         // 1) Slide to overshoot with smooth easing
         yield return MoveEase(transform, startPos, overshootPos, slideTime);
@@ -34,8 +48,16 @@ public class CustomerSlideIn : MonoBehaviour
         yield return MoveEase(transform, targetPos, targetPos + Vector3.right * 0.08f, 0.08f);
         yield return MoveEase(transform, targetPos + Vector3.right * 0.08f, targetPos, 0.08f);
 
+        OnHasSlidIn.Invoke();
+
         if (speechBubble != null)
             speechBubble.Show("Can you make me a mask?");
+    }
+
+    IEnumerator SlideOutRoutine(){
+        var newScale = transform.GetChild(0).localScale;
+        transform.GetChild(0).localScale = new Vector3(-newScale.x,newScale.y,newScale.z);
+        yield return MoveEase(transform, targetPos, startPos, slideTime);
     }
 
     IEnumerator MoveEase(Transform t, Vector3 a, Vector3 b, float duration)
