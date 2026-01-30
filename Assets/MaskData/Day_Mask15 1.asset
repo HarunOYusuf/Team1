@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 15010ad0e8ea69f40925e221728ee970, type: 3}
-  m_Name: Day1_Mask12
+  m_Name: Day_Mask15 1
   m_EditorClassIdentifier: 
-  maskName: Day_Mask13
-  maskID: 12
-  displayImage: {fileID: 2800000, guid: 1c185ecb49c13d948a0bdbb015f2f0ce, type: 3}
-  patternImage: {fileID: 2800000, guid: f3744687f2b788f4e9f4dd34e6a487a3, type: 3}
-  baseImage: {fileID: 2800000, guid: 5f89a08722002ea4eb7256f5b98ae046, type: 3}
+  maskName: Day_Mask15
+  maskID: 13
+  displayImage: {fileID: 2800000, guid: dfd268f558a555d4b9032cbaa58ffbee, type: 3}
+  patternImage: {fileID: 2800000, guid: 58de059aa82c76641bb65feb49295596, type: 3}
+  baseImage: {fileID: 2800000, guid: dfa516d8d73753c4d8b8692b717a7fac, type: 3}
   availableOnDay: 1
   difficulty: 1
   basePrice: 50
