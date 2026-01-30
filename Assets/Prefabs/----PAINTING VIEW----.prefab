@@ -162,7 +162,7 @@ MonoBehaviour:
   samplePointCount: 128
   shapeWeight: 0.5
   quadrantWeight: 0.5
-  gridDivisions: 2
+  gridDivisions: 8
   emptyQuadrantPenalty: 50
   targetDisplay: {fileID: 0}
   targetImage: {fileID: 0}
@@ -270,7 +270,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.02, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7249606393685724038}

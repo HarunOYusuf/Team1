@@ -865,10 +865,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1592913375}
     - target: {fileID: 3274588357627914392, guid: 7b78b462ea8e1d44ba10bdbcb911ae81, type: 3}
-      propertyPath: memoryTimerText
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 3274588357627914392, guid: 7b78b462ea8e1d44ba10bdbcb911ae81, type: 3}
       propertyPath: paintableCanvas
       value: 
       objectReference: {fileID: 1755759871}
@@ -5087,14 +5083,6 @@ PrefabInstance:
     - target: {fileID: 2431484935679499929, guid: a776518e0ba863d4c97769865931aa66, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2899901217024526505, guid: a776518e0ba863d4c97769865931aa66, type: 3}
-      propertyPath: gridDivisions
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 2899901217024526505, guid: a776518e0ba863d4c97769865931aa66, type: 3}
-      propertyPath: emptyQuadrantPenalty
-      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 2899901217024526505, guid: a776518e0ba863d4c97769865931aa66, type: 3}
       propertyPath: onFail.m_PersistentCalls.m_Calls.Array.data[0].m_Target
