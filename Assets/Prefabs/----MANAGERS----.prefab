@@ -87,7 +87,11 @@ MonoBehaviour:
   dayDuration: 120
   dayTimeRemaining: 0
   dayInProgress: 0
-  allMasks: []
+  allMasks:
+  - {fileID: 11400000, guid: 94f6a988de6521b4b8d754556a376372, type: 2}
+  - {fileID: 11400000, guid: 76de306fc6d96464c9fd4e75f3588b9c, type: 2}
+  - {fileID: 11400000, guid: 45165990bad833c4389c77af688f3139, type: 2}
+  - {fileID: 11400000, guid: ef3deb5fbd87a204cb32048bf986e199, type: 2}
   dayResults: []
 --- !u!1 &6210238201119038576
 GameObject:
@@ -133,3 +137,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57fda60743eb38240947e3523c4cb299, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
+  shopView: {fileID: 0}
+  paintingView: {fileID: 0}
+  hudPanel: {fileID: 0}
+  maskDisplayPanel: {fileID: 0}
+  paintingUIPanel: {fileID: 0}
+  maskSelectionPanel: {fileID: 0}
+  endOfDayPanel: {fileID: 0}
+  dayText: {fileID: 0}
+  dayTimerText: {fileID: 0}
+  moneyText: {fileID: 0}
+  maskDisplayImage: {fileID: 0}
+  memoryTimerText: {fileID: 0}
+  maskOptionButtons:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  maskOptionImages:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  paintingTimerText: {fileID: 0}
+  instructionText: {fileID: 0}
+  craftButton: {fileID: 0}
+  resetButton: {fileID: 0}
+  resultText: {fileID: 0}
+  redColorButton: {fileID: 0}
+  yellowColorButton: {fileID: 0}
+  blueColorButton: {fileID: 0}
+  currentColorDisplay: {fileID: 0}
+  daySummaryText: {fileID: 0}
+  replayButton: {fileID: 0}
+  paintingSystem: {fileID: 0}
+  paintableCanvas: {fileID: 0}
+  customerScript: {fileID: 0}
+  memoryPhaseDuration: 2
+  paintingTimerDuration: 15
+  dayDuration: 10
+  customerEnterDuration: 2
+  customerExitDuration: 2
+  resultDisplayDuration: 2
+  perfectScoreThreshold: 60
+  okayScoreThreshold: 45
+  perfectPayment: 60
+  okayPayment: 30
+  failPayment: 0
+  audioSource: {fileID: 0}
+  successSound: {fileID: 0}
+  okaySound: {fileID: 0}
+  failSound: {fileID: 0}
