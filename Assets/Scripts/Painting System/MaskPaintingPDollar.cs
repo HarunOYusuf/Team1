@@ -20,6 +20,7 @@ public class MaskPaintingPDollar : MonoBehaviour
     [SerializeField] private Texture2D maskDisplayImage;      // The full mask shown to player (Image 1)
     [SerializeField] private Texture2D referencePatternPNG;   // The pattern-only PNG for comparison (Image 2)
     [SerializeField] private Color patternColor = Color.red;  // Color to detect in the pattern
+    [SerializeField] private Color[] referencePatternColors = new Color[] { Color.red };  // All colors in the pattern
     [SerializeField] private float colorTolerance = 0.3f;
     
     [Header("GameManager Integration")]
@@ -80,29 +81,66 @@ public class MaskPaintingPDollar : MonoBehaviour
     {
         Debug.Log("=== MaskPaintingPDollar START ===");
         
-        // Try to load mask from GameData if enabled
-        if (useGameData && GameData.Instance != null && GameData.Instance.currentMask != null)
-        {
-            LoadMaskFromGameData();
-        }
-        
         mainCamera = Camera.main;
         Debug.Log($"[1] Camera: {(mainCamera != null ? "OK" : "NULL")}");
         
         // Check sprite renderer
         if (spriteRenderer == null)
         {
-            Debug.LogError("[2] SpriteRenderer is NULL!");
-            return;
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null)
+            {
+                Debug.LogError("[2] SpriteRenderer is NULL!");
+                return;
+            }
         }
         Debug.Log($"[2] SpriteRenderer: OK");
         
-        if (spriteRenderer.sprite == null)
+        // Try to load mask from GameData if enabled
+        if (useGameData && GameData.Instance != null && GameData.Instance.currentMask != null)
         {
-            Debug.LogError("[3] SpriteRenderer.sprite is NULL! Make sure MaskData has a base image assigned.");
+            LoadMaskFromGameData();
+        }
+        
+        // If sprite is set (either from Inspector or GameData), initialize painting
+        if (spriteRenderer.sprite != null)
+        {
+            Debug.Log($"[3] Sprite: OK - {spriteRenderer.sprite.name}");
+            InitializeFromCurrentSprite();
+        }
+        else
+        {
+            // No sprite yet - GameSceneManager will call SetBaseImage() later
+            Debug.Log("[3] No sprite yet - waiting for GameSceneManager to set base image");
+        }
+        
+        // Setup UI (optional - may be null if GameSceneManager controls UI)
+        if (submitButton != null)
+        {
+            submitButton.onClick.AddListener(OnSubmit);
+            submitButton.gameObject.SetActive(false);
+            Debug.Log("[9] Submit button: OK");
+        }
+        
+        if (resultText != null)
+        {
+            resultText.gameObject.SetActive(false);
+            Debug.Log("[10] Result text: OK");
+        }
+        
+        Debug.Log("=== START COMPLETE ===");
+    }
+    
+    /// <summary>
+    /// Initialize painting system from current sprite
+    /// </summary>
+    void InitializeFromCurrentSprite()
+    {
+        if (spriteRenderer == null || spriteRenderer.sprite == null)
+        {
+            Debug.LogError("[InitializeFromCurrentSprite] No sprite to initialize from!");
             return;
         }
-        Debug.Log($"[3] Sprite: OK");
         
         // Store original texture
         Texture2D baseTexture = spriteRenderer.sprite.texture;
@@ -152,24 +190,6 @@ public class MaskPaintingPDollar : MonoBehaviour
         CreateReferenceGesture();
         Debug.Log("[8] Reference gesture creation attempted");
         
-        // Setup UI
-        if (submitButton == null)
-        {
-            Debug.LogError("[9] Submit Button is NULL!");
-            return;
-        }
-        submitButton.onClick.AddListener(OnSubmit);
-        submitButton.gameObject.SetActive(false);
-        Debug.Log("[9] Submit button: OK");
-        
-        if (resultText == null)
-        {
-            Debug.LogError("[10] Result Text is NULL!");
-            return;
-        }
-        resultText.gameObject.SetActive(false);
-        Debug.Log("[10] Result text: OK");
-        
         // If using GameData, skip memory phase (already happened in shop scene)
         if (useGameData)
         {
@@ -181,8 +201,6 @@ public class MaskPaintingPDollar : MonoBehaviour
             Debug.Log("[11] Starting memory phase...");
             StartMemoryPhase();
         }
-        
-        Debug.Log("=== START COMPLETE ===");
     }
     
     void StartPaintingPhase()
@@ -208,6 +226,45 @@ public class MaskPaintingPDollar : MonoBehaviour
     }
     
     #region Public Methods for GameSceneManager
+    
+    /// <summary>
+    /// Set the paint color (called by GameSceneManager when player selects color)
+    /// </summary>
+    public void SetPaintColor(Color color)
+    {
+        paintColor = color;
+        Debug.Log($"[MaskPaintingPDollar] Paint color set to: {color}");
+    }
+    
+    /// <summary>
+    /// Completely clear the canvas (sprite and textures)
+    /// </summary>
+    public void ClearCanvas()
+    {
+        // Clear textures
+        if (paintTexture != null)
+        {
+            Color[] clearPixels = new Color[paintTexture.width * paintTexture.height];
+            for (int i = 0; i < clearPixels.Length; i++)
+                clearPixels[i] = Color.clear;
+            paintTexture.SetPixels(clearPixels);
+            paintTexture.Apply();
+        }
+        
+        originalBaseTexture = null;
+        paintTexture = null;
+        originalAlphaMap = null;
+        
+        // Clear sprite
+        if (spriteRenderer != null)
+            spriteRenderer.sprite = null;
+        
+        // Clear tracking
+        playerStrokePoints.Clear();
+        currentStrokeID = 0;
+        
+        Debug.Log("[MaskPaintingPDollar] Canvas cleared completely");
+    }
     
     /// <summary>
     /// Enable or disable painting
@@ -243,6 +300,7 @@ public class MaskPaintingPDollar : MonoBehaviour
     {
         referencePatternPNG = pattern;
         patternColor = color;
+        referencePatternColors = new Color[] { color };
         
         // Recreate reference gesture
         CreateReferenceGesture();
@@ -251,25 +309,149 @@ public class MaskPaintingPDollar : MonoBehaviour
     }
     
     /// <summary>
+    /// Set the reference pattern with multiple colors (called by GameSceneManager)
+    /// </summary>
+    public void SetReferencePattern(Texture2D pattern, Color[] colors)
+    {
+        referencePatternPNG = pattern;
+        referencePatternColors = colors;
+        if (colors.Length > 0)
+            patternColor = colors[0];
+        
+        // Recreate reference gesture and color map
+        CreateReferenceGesture();
+        CreateReferenceColorMap();
+        
+        Debug.Log($"[MaskPaintingPDollar] Reference pattern set with {colors.Length} colors");
+    }
+    
+    // Store color information per quadrant from reference
+    private Color[] referenceQuadrantColors;
+    
+    /// <summary>
+    /// Create a map of which colors are in which quadrants of the reference
+    /// </summary>
+    void CreateReferenceColorMap()
+    {
+        if (referencePatternPNG == null) return;
+        
+        int totalCells = gridDivisions * gridDivisions;
+        referenceQuadrantColors = new Color[totalCells];
+        
+        int cellWidth = referencePatternPNG.width / gridDivisions;
+        int cellHeight = referencePatternPNG.height / gridDivisions;
+        
+        // For each quadrant, find the dominant color
+        for (int cellY = 0; cellY < gridDivisions; cellY++)
+        {
+            for (int cellX = 0; cellX < gridDivisions; cellX++)
+            {
+                int cellIndex = cellY * gridDivisions + cellX;
+                Dictionary<Color, int> colorCounts = new Dictionary<Color, int>();
+                
+                int startX = cellX * cellWidth;
+                int startY = cellY * cellHeight;
+                
+                for (int x = startX; x < startX + cellWidth && x < referencePatternPNG.width; x++)
+                {
+                    for (int y = startY; y < startY + cellHeight && y < referencePatternPNG.height; y++)
+                    {
+                        Color pixel = referencePatternPNG.GetPixel(x, y);
+                        
+                        if (pixel.a > 0.1f)  // Not transparent
+                        {
+                            // Match to closest reference color
+                            Color matchedColor = GetClosestReferenceColor(pixel);
+                            if (matchedColor != Color.clear)
+                            {
+                                if (colorCounts.ContainsKey(matchedColor))
+                                    colorCounts[matchedColor]++;
+                                else
+                                    colorCounts[matchedColor] = 1;
+                            }
+                        }
+                    }
+                }
+                
+                // Find dominant color in this quadrant
+                Color dominantColor = Color.clear;
+                int maxCount = 0;
+                foreach (var kvp in colorCounts)
+                {
+                    if (kvp.Value > maxCount)
+                    {
+                        maxCount = kvp.Value;
+                        dominantColor = kvp.Key;
+                    }
+                }
+                
+                referenceQuadrantColors[cellIndex] = dominantColor;
+            }
+        }
+        
+        Debug.Log($"[MaskPaintingPDollar] Reference color map created for {totalCells} quadrants");
+    }
+    
+    Color GetClosestReferenceColor(Color pixel)
+    {
+        foreach (Color refColor in referencePatternColors)
+        {
+            float rDiff = Mathf.Abs(pixel.r - refColor.r);
+            float gDiff = Mathf.Abs(pixel.g - refColor.g);
+            float bDiff = Mathf.Abs(pixel.b - refColor.b);
+            
+            if (rDiff < colorTolerance && gDiff < colorTolerance && bDiff < colorTolerance)
+                return refColor;
+        }
+        return Color.clear;
+    }
+    
+    /// <summary>
     /// Set the base image for the painting canvas
     /// </summary>
     public void SetBaseImage(Texture2D baseImage)
     {
-        if (baseImage != null && spriteRenderer != null)
+        if (baseImage == null)
         {
-            Sprite baseSprite = Sprite.Create(
-                baseImage,
-                new Rect(0, 0, baseImage.width, baseImage.height),
-                new Vector2(0.5f, 0.5f),
-                100f
-            );
-            spriteRenderer.sprite = baseSprite;
-            
-            // Reinitialize textures
-            InitializePaintTexture();
-            
-            Debug.Log($"[MaskPaintingPDollar] Base image set: {baseImage.name}");
+            Debug.LogError("[MaskPaintingPDollar] SetBaseImage called with null texture!");
+            return;
         }
+        
+        if (spriteRenderer == null)
+        {
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null)
+            {
+                Debug.LogError("[MaskPaintingPDollar] No SpriteRenderer found on this object!");
+                return;
+            }
+        }
+        
+        // Ensure camera is set
+        if (mainCamera == null)
+            mainCamera = Camera.main;
+        
+        Sprite baseSprite = Sprite.Create(
+            baseImage,
+            new Rect(0, 0, baseImage.width, baseImage.height),
+            new Vector2(0.5f, 0.5f),
+            100f  // Pixels per unit
+        );
+        spriteRenderer.sprite = baseSprite;
+        
+        // Auto-resize BoxCollider2D to match the new sprite
+        BoxCollider2D boxCollider = GetComponent<BoxCollider2D>();
+        if (boxCollider != null)
+        {
+            boxCollider.size = baseSprite.bounds.size;
+            boxCollider.offset = Vector2.zero;
+            Debug.Log($"[MaskPaintingPDollar] BoxCollider2D resized to: {boxCollider.size}");
+        }
+        
+        // Reinitialize textures
+        InitializePaintTexture();
+        
+        Debug.Log($"[MaskPaintingPDollar] Base image set: {baseImage.name} ({baseImage.width}x{baseImage.height})");
     }
     
     /// <summary>
@@ -658,6 +840,31 @@ public class MaskPaintingPDollar : MonoBehaviour
     
     void Paint()
     {
+        // Ensure camera exists
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+            if (mainCamera == null)
+            {
+                Debug.LogError("[MaskPaintingPDollar] No main camera found!");
+                return;
+            }
+        }
+        
+        // Ensure sprite renderer exists
+        if (spriteRenderer == null || spriteRenderer.sprite == null)
+        {
+            Debug.LogError("[MaskPaintingPDollar] SpriteRenderer or sprite is null!");
+            return;
+        }
+        
+        // Ensure paint texture exists
+        if (paintTexture == null)
+        {
+            Debug.LogError("[MaskPaintingPDollar] Paint texture is null! Call InitializePaintTexture first.");
+            return;
+        }
+        
         Vector2 mousePos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
         RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
         
@@ -921,8 +1128,13 @@ public class MaskPaintingPDollar : MonoBehaviour
     }
     
     /// <summary>
-    /// Compare reference quadrant counts to player quadrant counts
+    /// Compare reference quadrant counts to player quadrant counts WITH COLOR CHECKING
     /// Returns a score from 0-100
+    /// 
+    /// Scoring:
+    /// - Right location + Right color = 1.0x multiplier
+    /// - Right location + Wrong color = 0.5x multiplier
+    /// - Wrong location = penalized
     /// </summary>
     float CalculateQuadrantMatchScore()
     {
@@ -944,28 +1156,59 @@ public class MaskPaintingPDollar : MonoBehaviour
         
         int emptyQuadrantViolations = 0;
         
+        // Calculate color-aware quadrant scores
+        var playerQuadrantColorData = CalculatePlayerQuadrantColors();
+        
         for (int i = 0; i < totalCells; i++)
         {
             float refNormalized = (float)referenceQuadrantCounts[i] / maxRefCount;
             float playerNormalized = (float)playerQuadrantCounts[i] / maxRefCount;
             
             // Check for empty quadrant violation: reference is empty but player painted there
-            bool isRefEmpty = referenceQuadrantCounts[i] < 10;  // Less than 10 pixels = effectively empty
-            bool playerPaintedHere = playerQuadrantCounts[i] > 50;  // More than 50 pixels = significant paint
+            bool isRefEmpty = referenceQuadrantCounts[i] < 10;
+            bool playerPaintedHere = playerQuadrantCounts[i] > 50;
             
             if (isRefEmpty && playerPaintedHere)
             {
                 emptyQuadrantViolations++;
-                // Apply penalty proportional to how much they painted in the empty quadrant
                 float violationAmount = (float)playerQuadrantCounts[i] / maxPlayerCount;
                 totalPenalty += violationAmount * (emptyQuadrantPenalty / 100f);
                 
                 Debug.Log($"Empty quadrant violation in Q{i}: Player painted {playerQuadrantCounts[i]} pixels where reference has {referenceQuadrantCounts[i]}");
+                continue;
             }
             
-            // Calculate how close they are (1 = perfect match, 0 = completely different)
+            // Calculate location match (1 = perfect match, 0 = completely different)
             float diff = Mathf.Abs(refNormalized - playerNormalized);
-            float cellScore = 1f - Mathf.Min(diff, 1f);
+            float locationScore = 1f - Mathf.Min(diff, 1f);
+            
+            // Calculate color match multiplier
+            float colorMultiplier = 1.0f;
+            
+            if (referenceQuadrantColors != null && i < referenceQuadrantColors.Length && playerPaintedHere)
+            {
+                Color refColor = referenceQuadrantColors[i];
+                Color playerDominantColor = playerQuadrantColorData[i];
+                
+                if (refColor != Color.clear && playerDominantColor != Color.clear)
+                {
+                    bool colorMatches = ColorsMatch(refColor, playerDominantColor);
+                    
+                    if (colorMatches)
+                    {
+                        colorMultiplier = 1.0f;  // Right location + Right color
+                        Debug.Log($"Q{i}: Color MATCH - Reference: {refColor}, Player: {playerDominantColor}");
+                    }
+                    else
+                    {
+                        colorMultiplier = 0.5f;  // Right location + Wrong color
+                        Debug.Log($"Q{i}: Color MISMATCH - Reference: {refColor}, Player: {playerDominantColor}");
+                    }
+                }
+            }
+            
+            // Apply color multiplier to location score
+            float cellScore = locationScore * colorMultiplier;
             
             // Weight cells with more reference pixels as more important
             float cellWeight = refNormalized > 0.1f ? 1f : 0.3f;
@@ -991,10 +1234,97 @@ public class MaskPaintingPDollar : MonoBehaviour
         if (emptyQuadrantViolations > 0)
         {
             Debug.Log($"Empty quadrant violations: {emptyQuadrantViolations}, Penalty applied: {(1f - penaltyMultiplier) * 100f:F1}%");
-            Debug.Log($"Quadrant score before penalty: {baseScore:F1}%, after: {finalQuadrantScore:F1}%");
         }
         
+        Debug.Log($"Quadrant score (with color): {finalQuadrantScore:F1}%");
+        
         return finalQuadrantScore;
+    }
+    
+    /// <summary>
+    /// Calculate the dominant color in each quadrant of the player's painting
+    /// </summary>
+    Color[] CalculatePlayerQuadrantColors()
+    {
+        int totalCells = gridDivisions * gridDivisions;
+        Color[] quadrantColors = new Color[totalCells];
+        
+        if (paintTexture == null) return quadrantColors;
+        
+        int cellWidth = paintTexture.width / gridDivisions;
+        int cellHeight = paintTexture.height / gridDivisions;
+        
+        for (int cellY = 0; cellY < gridDivisions; cellY++)
+        {
+            for (int cellX = 0; cellX < gridDivisions; cellX++)
+            {
+                int cellIndex = cellY * gridDivisions + cellX;
+                
+                // Count each color type in this quadrant
+                int redCount = 0, yellowCount = 0, blueCount = 0;
+                
+                int startX = cellX * cellWidth;
+                int startY = cellY * cellHeight;
+                
+                for (int x = startX; x < startX + cellWidth && x < paintTexture.width; x++)
+                {
+                    for (int y = startY; y < startY + cellHeight && y < paintTexture.height; y++)
+                    {
+                        Color pixel = paintTexture.GetPixel(x, y);
+                        
+                        // Skip if this was part of the original base (not painted)
+                        if (originalAlphaMap != null && x < originalAlphaMap.GetLength(0) && y < originalAlphaMap.GetLength(1))
+                        {
+                            // Only count if it's painted (different from original or on white area)
+                        }
+                        
+                        if (pixel.a > 0.5f)  // Not transparent
+                        {
+                            // Categorize the color
+                            if (IsRedColor(pixel)) redCount++;
+                            else if (IsYellowColor(pixel)) yellowCount++;
+                            else if (IsBlueColor(pixel)) blueCount++;
+                        }
+                    }
+                }
+                
+                // Find dominant color
+                if (redCount >= yellowCount && redCount >= blueCount && redCount > 0)
+                    quadrantColors[cellIndex] = Color.red;
+                else if (yellowCount >= redCount && yellowCount >= blueCount && yellowCount > 0)
+                    quadrantColors[cellIndex] = Color.yellow;
+                else if (blueCount > 0)
+                    quadrantColors[cellIndex] = Color.blue;
+                else
+                    quadrantColors[cellIndex] = Color.clear;
+            }
+        }
+        
+        return quadrantColors;
+    }
+    
+    bool IsRedColor(Color c)
+    {
+        return c.r > 0.7f && c.g < 0.4f && c.b < 0.4f;
+    }
+    
+    bool IsYellowColor(Color c)
+    {
+        return c.r > 0.7f && c.g > 0.7f && c.b < 0.4f;
+    }
+    
+    bool IsBlueColor(Color c)
+    {
+        return c.r < 0.4f && c.g < 0.4f && c.b > 0.7f;
+    }
+    
+    bool ColorsMatch(Color a, Color b)
+    {
+        // Check if both are the same category (red, yellow, or blue)
+        if (IsRedColor(a) && IsRedColor(b)) return true;
+        if (IsYellowColor(a) && IsYellowColor(b)) return true;
+        if (IsBlueColor(a) && IsBlueColor(b)) return true;
+        return false;
     }
     
     #endregion

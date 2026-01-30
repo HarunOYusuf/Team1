@@ -46,6 +46,13 @@ public class GameSceneManager : MonoBehaviour
     [SerializeField] private Button resetButton;
     [SerializeField] private TextMeshProUGUI resultText;
     
+    [Header("Color Selection")]
+    [SerializeField] private Button redColorButton;
+    [SerializeField] private Button yellowColorButton;
+    [SerializeField] private Button blueColorButton;
+    [SerializeField] private Image currentColorDisplay;  // Shows currently selected color
+    private Color currentPaintColor = Color.red;  // Default to red
+    
     [Header("End of Day UI")]
     [SerializeField] private TextMeshProUGUI daySummaryText;
     [SerializeField] private Button replayButton;
@@ -168,6 +175,14 @@ public class GameSceneManager : MonoBehaviour
         if (replayButton != null)
             replayButton.onClick.AddListener(OnReplayPressed);
         
+        // Color buttons
+        if (redColorButton != null)
+            redColorButton.onClick.AddListener(() => OnColorSelected(Color.red));
+        if (yellowColorButton != null)
+            yellowColorButton.onClick.AddListener(() => OnColorSelected(Color.yellow));
+        if (blueColorButton != null)
+            blueColorButton.onClick.AddListener(() => OnColorSelected(Color.blue));
+        
         // Mask selection buttons
         for (int i = 0; i < maskOptionButtons.Length; i++)
         {
@@ -175,6 +190,40 @@ public class GameSceneManager : MonoBehaviour
             if (maskOptionButtons[i] != null)
                 maskOptionButtons[i].onClick.AddListener(() => OnMaskSelected(index));
         }
+    }
+    
+    void OnColorSelected(Color color)
+    {
+        currentPaintColor = color;
+        
+        // Update color display
+        if (currentColorDisplay != null)
+            currentColorDisplay.color = color;
+        
+        // Tell painting system to use this color
+        if (paintingSystem != null)
+            paintingSystem.SetPaintColor(color);
+        
+        Debug.Log($"[GameSceneManager] Color selected: {color}");
+    }
+    
+    /// <summary>
+    /// Clear the painting canvas completely
+    /// </summary>
+    void ClearPaintingCanvas()
+    {
+        if (paintingSystem != null)
+        {
+            paintingSystem.ClearCanvas();
+        }
+        
+        // Also clear the sprite renderer
+        if (paintableCanvas != null)
+        {
+            paintableCanvas.sprite = null;
+        }
+        
+        Debug.Log("[GameSceneManager] Painting canvas cleared");
     }
 
     void HideAllPanels()
@@ -433,24 +482,26 @@ public class GameSceneManager : MonoBehaviour
             maskSelectionPanel.SetActive(true);
         
         // Populate mask options with day's masks (up to 4)
+        // Show BASE images (blank templates), not display images (with patterns)
         for (int i = 0; i < maskOptionButtons.Length; i++)
         {
             if (i < dayMasks.Count)
             {
                 maskOptionButtons[i].gameObject.SetActive(true);
                 
-                // Set the mask image on the button
+                // Set the BASE mask image on the button (blank template)
                 if (maskOptionImages != null && i < maskOptionImages.Length && maskOptionImages[i] != null)
                 {
                     MaskData mask = dayMasks[i];
-                    if (mask.displayImage != null)
+                    if (mask.baseImage != null)
                     {
                         Sprite sprite = Sprite.Create(
-                            mask.displayImage,
-                            new Rect(0, 0, mask.displayImage.width, mask.displayImage.height),
+                            mask.baseImage,
+                            new Rect(0, 0, mask.baseImage.width, mask.baseImage.height),
                             new Vector2(0.5f, 0.5f)
                         );
                         maskOptionImages[i].sprite = sprite;
+                        maskOptionImages[i].preserveAspect = true;  // Keep aspect ratio
                     }
                 }
             }
@@ -472,8 +523,20 @@ public class GameSceneManager : MonoBehaviour
 
     void LoadMaskOntoCanvas(MaskData mask)
     {
-        if (paintableCanvas != null && mask.baseImage != null)
+        if (mask == null)
         {
+            Debug.LogError("[GameSceneManager] LoadMaskOntoCanvas called with null mask!");
+            return;
+        }
+        
+        // Tell painting system to load the base image
+        if (paintingSystem != null && mask.baseImage != null)
+        {
+            paintingSystem.SetBaseImage(mask.baseImage);
+        }
+        else if (paintableCanvas != null && mask.baseImage != null)
+        {
+            // Fallback: set sprite directly
             Sprite baseSprite = Sprite.Create(
                 mask.baseImage,
                 new Rect(0, 0, mask.baseImage.width, mask.baseImage.height),
@@ -483,11 +546,22 @@ public class GameSceneManager : MonoBehaviour
             paintableCanvas.sprite = baseSprite;
         }
         
-        // Tell painting system which pattern to compare against
-        if (paintingSystem != null)
+        // Tell painting system which pattern to compare against (with colors)
+        if (paintingSystem != null && currentRequestedMask != null)
         {
-            paintingSystem.SetReferencePattern(currentRequestedMask.patternImage, currentRequestedMask.patternColor);
+            // Use pattern colors array if available, otherwise use single color
+            if (currentRequestedMask.patternColors != null && currentRequestedMask.patternColors.Length > 0)
+            {
+                paintingSystem.SetReferencePattern(currentRequestedMask.patternImage, currentRequestedMask.patternColors);
+            }
+            else
+            {
+                paintingSystem.SetReferencePattern(currentRequestedMask.patternImage, currentRequestedMask.patternColor);
+            }
         }
+        
+        // Set default paint color to red
+        OnColorSelected(Color.red);
     }
 
     void OnCraftPressed()
@@ -497,7 +571,18 @@ public class GameSceneManager : MonoBehaviour
         hasSubmitted = true;
         Debug.Log("[GameSceneManager] Craft pressed - calculating score...");
         
-        // Calculate score
+        // CHECK 1: Did player select the correct mask template?
+        if (currentSelectedMask != currentRequestedMask)
+        {
+            Debug.Log($"[GameSceneManager] WRONG TEMPLATE! Selected: {currentSelectedMask?.maskName}, Required: {currentRequestedMask?.maskName}");
+            Debug.Log("[GameSceneManager] AUTO FAIL - Wrong mask template selected");
+            lastScore = 0f;
+            return;
+        }
+        
+        Debug.Log("[GameSceneManager] Correct template selected - calculating detailed score...");
+        
+        // Calculate score (shape + color-aware quadrant)
         if (paintingSystem != null)
         {
             lastScore = paintingSystem.CalculateScore();
@@ -505,13 +590,6 @@ public class GameSceneManager : MonoBehaviour
         else
         {
             lastScore = 0f;
-        }
-        
-        // Check if player selected wrong mask
-        if (currentSelectedMask != currentRequestedMask)
-        {
-            Debug.Log("[GameSceneManager] Wrong mask selected! Applying penalty...");
-            lastScore *= 0.5f;  // 50% penalty for wrong mask
         }
         
         Debug.Log($"[GameSceneManager] Final score: {lastScore:F1}%");
@@ -638,6 +716,9 @@ public class GameSceneManager : MonoBehaviour
         if (maskSelectionPanel != null) maskSelectionPanel.SetActive(false);
         if (craftButton != null) craftButton.gameObject.SetActive(false);
         if (resetButton != null) resetButton.gameObject.SetActive(false);
+        
+        // Clear the painting canvas for next customer
+        ClearPaintingCanvas();
     }
 
     void ShowPaintingView()
